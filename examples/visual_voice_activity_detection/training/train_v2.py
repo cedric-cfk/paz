@@ -30,6 +30,7 @@ parser.add_argument('-e', '--epochs', type=int,
 parser.add_argument('-o', '--output_path', type=str,
                     default="./output/",
                     help='Path to directory for saving outputs.')
+parser.add_argument('--testing', action='store_true', help='Use the test split instead of the validation split')
 
 args = parser.parse_args()
 
@@ -47,8 +48,8 @@ try:
 except FileExistsError:
     pass
 
-generatorTrain = VVAD_LRS3(path=args.data_path, split="train")
-generatorVal = VVAD_LRS3(path=args.data_path, split="val")
+generatorTrain = VVAD_LRS3(path=args.data_path, split="train", testing=args.testing)
+generatorVal = VVAD_LRS3(path=args.data_path, split="val", testing=args.testing)
 
 datasetTrain = Dataset.from_generator(generatorTrain, output_signature=(tf.TensorSpec(shape=(38, 96, 96, 3)), tf.TensorSpec(shape=(), dtype=tf.int8)))
 datasetVal = Dataset.from_generator(generatorVal, output_signature=(tf.TensorSpec(shape=(38, 96, 96, 3)), tf.TensorSpec(shape=(), dtype=tf.int8)))
