@@ -62,8 +62,8 @@ datasetVal = datasetVal.apply(
     tf.data.experimental.assert_cardinality(len(generatorVal))
 )
 
-datasetTrain = datasetTrain.batch(args.batch_size)
-datasetVal = datasetVal.batch(args.batch_size)
+datasetTrain = datasetTrain.padded_batch(args.batch_size)
+datasetVal = datasetVal.padded_batch(args.batch_size)
 
 n_batches_per_epoch = len(datasetTrain) / args.batch_size
 n_batches_per_epoch = math.ceil(n_batches_per_epoch)
