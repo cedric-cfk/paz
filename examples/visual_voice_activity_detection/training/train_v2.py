@@ -31,6 +31,9 @@ parser.add_argument('-o', '--output_path', type=str,
                     default="./output/",
                     help='Path to directory for saving outputs.')
 parser.add_argument('--testing', action='store_true', help='Use the test split instead of the validation split')
+parser.add_argument('--use_multiprocessing', action='store_true', help='Use multiprocessing for data loading')
+parser.add_argument('--workers', type=int, default=5, help='Number of workers for data loading')
+parser.add_argument('--max_queue_size', type=int, default=5, help='Max queue size for data loading')
 
 args = parser.parse_args()
 
@@ -74,7 +77,7 @@ model = None
 if args.model == "VVAD_LRS3":
     model = VVAD_LRS3_LSTM()
     loss = BinaryCrossentropy()
-    optimizer = SGD()
+    optimizer = SGD(lr=0.01, decay=0.01 / args.epochs)
 
     model.compile(loss=loss, optimizer=optimizer, metrics=[tf.keras.metrics.BinaryAccuracy(threshold=0.5), 'TrueNegatives', 'TruePositives', 'FalseNegatives', 'FalsePositives'])
 elif args.model == "CNN2Plus1D":
@@ -115,6 +118,9 @@ tracker.start()
 model.fit(x = datasetTrain,
                     epochs = args.epochs,
                     callbacks=[cp_callback, tb_callback, csv_callback],
-                    validation_data = datasetVal)
+                    validation_data = datasetVal,
+                    use_multiprocessing=args.use_multiprocessing,
+                    workers=args.workers,
+                    max_queue_size=args.max_queue_size)
 
 tracker.stop()
