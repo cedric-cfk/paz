@@ -80,7 +80,7 @@ if args.model == "VVAD_LRS3":
     loss = BinaryCrossentropy()
     # optimizer = SGD(learning_rate=0.01, decay=0.01 / args.epochs)
     optimizer = SGD()
-    callback_array.append(tf.keras.callbacks.ReduceLROnPlateau(monitor='val_acc', factor=0.1,
+    callbacks_array.append(tf.keras.callbacks.ReduceLROnPlateau(monitor='val_acc', factor=0.1,
                               patience=10, min_lr=0.001, cooldown=2))
 
     model.compile(loss=loss, optimizer=optimizer, metrics=[tf.keras.metrics.BinaryAccuracy(threshold=0.5), 'TrueNegatives', 'TruePositives', 'FalseNegatives', 'FalsePositives'])
