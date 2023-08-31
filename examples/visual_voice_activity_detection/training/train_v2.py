@@ -34,6 +34,7 @@ parser.add_argument('--testing', action='store_true', help='Use the test split i
 parser.add_argument('--use_multiprocessing', action='store_true', help='Use multiprocessing for data loading')
 parser.add_argument('--workers', type=int, default=5, help='Number of workers for data loading')
 parser.add_argument('--max_queue_size', type=int, default=5, help='Max queue size for data loading')
+parser.add_argument('--seed', type=int, default=305865, help='Seed for random number generators')
 
 args = parser.parse_args()
 
@@ -76,7 +77,7 @@ callbacks = []
 
 # Python 3.8 does not support switch case statements :(
 if args.model == "VVAD_LRS3":
-    model = VVAD_LRS3_LSTM()
+    model = VVAD_LRS3_LSTM(seed=args.seed)
     loss = BinaryCrossentropy()
     # optimizer = SGD(learning_rate=0.01, decay=0.01 / args.epochs)
     optimizer = SGD()
