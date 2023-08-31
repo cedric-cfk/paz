@@ -73,7 +73,7 @@ n_batches_per_epoch = len(datasetTrain) / args.batch_size
 n_batches_per_epoch = math.ceil(n_batches_per_epoch)
 
 model = None
-callbacks = []
+callbacks_array = []
 
 # Python 3.8 does not support switch case statements :(
 if args.model == "VVAD_LRS3":
@@ -81,7 +81,7 @@ if args.model == "VVAD_LRS3":
     loss = BinaryCrossentropy()
     # optimizer = SGD(learning_rate=0.01, decay=0.01 / args.epochs)
     optimizer = SGD()
-    callbacks.append(tf.keras.callbacks.ReduceLROnPlateau(monitor='val_acc', factor=0.1,
+    callbacks_array.append(tf.keras.callbacks.ReduceLROnPlateau(monitor='val_acc', factor=0.1,
                               patience=10, min_lr=0.001, cooldown=2))
 
     model.compile(loss=loss, optimizer=optimizer, metrics=[tf.keras.metrics.BinaryAccuracy(threshold=0.5), 'TrueNegatives', 'TruePositives', 'FalseNegatives', 'FalsePositives'])
@@ -102,27 +102,27 @@ else:
   raise Exception("Model name not found")
 
 # Checkpoint callback that saves the weights of the network every 20 epochs
-callbacks.append(tf.keras.callbacks.ModelCheckpoint(
+callbacks_array.append(tf.keras.callbacks.ModelCheckpoint(
     filepath=os.path.join(output_path, "checkpoints/weights-{epoch:02d}.hdf5"),
     verbose=1,
     save_weights_only=True,
     save_freq=10*n_batches_per_epoch
 ))
 
-callbacks.append(tf.keras.callbacks.TensorBoard(
+callbacks_array.append(tf.keras.callbacks.TensorBoard(
     log_dir=os.path.join(output_path, 'tensorboard_logs'),  # os.path.join(args.output_path, args.model, 'tensorboard_logs'),
     # don't think I need weight histogramms histogram_freq=1,
     update_freq='epoch'
 ))
 
-callbacks.append(callbacks.CSVLogger(filename=os.path.join(output_path, 'outputs_csv.log')))
+callbacks_array.append(callbacks.CSVLogger(filename=os.path.join(output_path, 'outputs_csv.log')))
 
 tracker = OfflineEmissionsTracker(project_name="VVAD", experiment_id=args.model, country_iso_code="DEU", output_dir=output_path, output_file="codecarbon", tracking_mode="process") # gpu_ids=[0,1,2,3], on_csv_write="append/update"
 tracker.start()
 
 model.fit(x = datasetTrain,
                     epochs = args.epochs,
-                    callbacks=callbacks,
+                    callbacks=callbacks_array,
                     validation_data = datasetVal,
                     use_multiprocessing=args.use_multiprocessing,
                     workers=args.workers,
