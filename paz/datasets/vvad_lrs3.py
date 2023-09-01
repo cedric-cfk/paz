@@ -80,9 +80,9 @@ class VVAD_LRS3(Generator):
         random.seed(445363)
 
     def __call__(self):
-        print("indexes_val", len(self.indexes_val))
-        print("indexes_test", len(self.indexes_test))
-        print("indexes_train", len(self.indexes_train))
+        # print("indexes_val", len(self.indexes_val))
+        # print("indexes_test", len(self.indexes_test))
+        # print("indexes_train", len(self.indexes_train))
         indexes = []
         if self.split == 'train':
             indexes = self.indexes_train
@@ -112,10 +112,8 @@ class VVAD_LRS3(Generator):
             raise ValueError('You need to call __call__ first to set the total_size')
 
         if self.split == 'train':
-            print("total_size_totoal", self.total_size - int(self.val_split * 0.5 * self.total_size) * 2 - int(self.test_split * 0.5 * self.total_size) * 2)
             return self.total_size - int(self.val_split * 0.5 * self.total_size) * 2 - int(self.test_split * 0.5 * self.total_size) * 2
         elif self.split == 'val':
-            print("total_size_val", int(self.val_split * 0.5 * self.total_size) * 2)
             return int(self.val_split * 0.5 * self.total_size) * 2
         elif self.split == 'test':
             print("total_size_test", self.total_size)
