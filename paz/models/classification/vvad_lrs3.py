@@ -28,11 +28,11 @@ def VVAD_LRS3_LSTM(weights=None, input_shape=(38, 96, 96, 3), seed=305865):
             '`input_shape` must be a tuple of 4 integers. '
             'Received: %s' % (input_shape,))
 
-    random.seed(seed)
-    initializer_glorot_lstm = tf.keras.initializers.GlorotUniform(seed=random.randint(0, 1000000))
-    initializer_glorot_dense = tf.keras.initializers.GlorotUniform(seed=random.randint(0, 1000000))
-    initializer_glorot_output = tf.keras.initializers.GlorotUniform(seed=random.randint(0, 1000000))
-    initializer_orthogonal = tf.keras.initializers.Orthogonal(seed=random.randint(0, 1000000))
+    # random.seed(seed)
+    # initializer_glorot_lstm = tf.keras.initializers.GlorotUniform(seed=random.randint(0, 1000000))
+    # initializer_glorot_dense = tf.keras.initializers.GlorotUniform(seed=random.randint(0, 1000000))
+    # initializer_glorot_output = tf.keras.initializers.GlorotUniform(seed=random.randint(0, 1000000))
+    # initializer_orthogonal = tf.keras.initializers.Orthogonal(seed=random.randint(0, 1000000))
 
     # input_shape = (None, 10, HEIGHT, WIDTH, 3)
     image = Input(shape=input_shape, name='image')
@@ -45,14 +45,14 @@ def VVAD_LRS3_LSTM(weights=None, input_shape=(38, 96, 96, 3), seed=305865):
     base_model = Model(base_model.input, flatten)
     x = TimeDistributed(base_model)(x)
 
-    x = LSTM(32, kernel_initializer=initializer_glorot_lstm, recurrent_initializer=initializer_orthogonal)(x)
+    x = LSTM(32)(x)
     x = BatchNormalization()(x)
 
     # Add some more dense here
     for i in range(1):
-        x = Dense(512, activation='relu', kernel_initializer=initializer_glorot_dense)(x)
+        x = Dense(512, activation='relu')(x)
 
-    x = Dense(1, activation="sigmoid", kernel_initializer=initializer_glorot_output)(x)
+    x = Dense(1, activation="sigmoid")(x)
 
     model = Model(inputs=image, outputs=x, name='Vvad_lrs3')
 
