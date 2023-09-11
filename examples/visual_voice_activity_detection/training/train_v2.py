@@ -16,7 +16,7 @@ from paz.models.classification import CNN2Plus1D, VVAD_LRS3_LSTM
 parser = argparse.ArgumentParser(description='Paz VVAD Training')
 parser.add_argument('-p', '--data_path', type=str,
                     default='.keras/paz/datasets',
-                    help='Path from your home dir to dataset directory')
+                    help='Path to dataset directory')
 parser.add_argument('-m', '--model', type=str,
                     default='VVAD_LRS3',
                     help='Model you want to train',
@@ -86,8 +86,7 @@ if args.model == "VVAD_LRS3":
 
     model.compile(loss=loss, optimizer=optimizer, metrics=[tf.keras.metrics.BinaryAccuracy(threshold=0.5), 'TrueNegatives', 'TruePositives', 'FalseNegatives', 'FalsePositives'])
 elif args.model == "CNN2Plus1D":
-    model = CNN2Plus1D()
-
+    model = CNN2Plus1D(seed=args.seed)
     loss = BinaryCrossentropy()  # Alternative for two label Classifications: Hinge Loss or Squared Hinge Loss
     optimizer = Adam(learning_rate=0.001)
 
