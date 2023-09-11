@@ -90,7 +90,7 @@ elif args.model == "CNN2Plus1D":
     loss = BinaryCrossentropy()  # Alternative for two label Classifications: Hinge Loss or Squared Hinge Loss
     optimizer = Adam(learning_rate=0.001)
 
-    model.compile(loss=loss, optimizer=optimizer, metrics=['accuracy'])
+    model.compile(loss=loss, optimizer=optimizer, metrics=[tf.keras.metrics.BinaryAccuracy(threshold=0.5), 'TrueNegatives', 'TruePositives', 'FalseNegatives', 'FalsePositives'])
 elif args.model == 'MoViNets':
     # model = MoViNets()
     raise NotImplementedError
