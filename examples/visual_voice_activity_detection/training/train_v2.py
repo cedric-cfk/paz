@@ -9,7 +9,7 @@ import tensorflow as tf
 keras = tf.keras
 from keras.losses import BinaryCrossentropy
 from keras.optimizers import AdamW, SGD  # TODO test a new docker with tensorflow 2.14
-from keras.optimizers.schedules.learning_rate_schedule import CosineDecay
+from keras.optimizers.schedules import CosineDecay
 
 from paz.datasets import VVAD_LRS3
 from paz.models.classification import CNN2Plus1D, VVAD_LRS3_LSTM
@@ -73,8 +73,7 @@ datasetVal = datasetVal.apply(
 datasetTrain = datasetTrain.padded_batch(args.batch_size)
 datasetVal = datasetVal.padded_batch(args.batch_size)
 
-n_batches_per_epoch = len(datasetTrain) / args.batch_size
-n_batches_per_epoch = math.ceil(n_batches_per_epoch)
+n_batches_per_epoch = len(datasetTrain)
 
 model = None
 callbacks_array = []
@@ -92,7 +91,7 @@ if args.model == "VVAD_LRS3":
 elif args.model == "CNN2Plus1D":
     model = CNN2Plus1D(seed=args.seed)
     loss = BinaryCrossentropy()  # Alternative for two label Classifications: Hinge Loss or Squared Hinge Loss
-    lr = CosineDecay(initial_learning_rate=0.0, warmup_steps=n_batches_per_epoch * args.warmup, warmup_target_lr=0.001, decay_steps=n_batches_per_epoch * args.epochs, alpha=0.0)
+    lr = CosineDecay(initial_learning_rate=0.0, warmup_steps=n_batches_per_epoch * args.warmup, warmup_target=0.001, decay_steps=n_batches_per_epoch * args.epochs, alpha=0.0)
     optimizer = AdamW(learning_rate=lr)
     lr_metric = helper_functions.get_lr_metric(optimizer)
     callbacks_array.append(tf.keras.callbacks.ReduceLROnPlateau(monitor='val_acc', factor=0.1,
@@ -112,7 +111,7 @@ callbacks_array.append(tf.keras.callbacks.ModelCheckpoint(
     filepath=os.path.join(output_path, "checkpoints/weights-{epoch:02d}.hdf5"),
     verbose=1,
     save_weights_only=True,
-    save_freq=10*n_batches_per_epoch
+    save_freq=n_batches_per_epoch
 ))
 
 callbacks_array.append(tf.keras.callbacks.TensorBoard(
