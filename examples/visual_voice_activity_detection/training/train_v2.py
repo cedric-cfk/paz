@@ -91,7 +91,7 @@ if args.model == "VVAD_LRS3":
 elif args.model == "CNN2Plus1D":
     model = CNN2Plus1D(seed=args.seed)
     loss = BinaryCrossentropy()  # Alternative for two label Classifications: Hinge Loss or Squared Hinge Loss
-    lr = CosineDecay(initial_learning_rate=0.0, warmup_steps=n_batches_per_epoch * args.warmup, warmup_target=0.001, decay_steps=n_batches_per_epoch * args.epochs, alpha=0.0)
+    lr = CosineDecay(initial_learning_rate=0.0, warmup_steps=n_batches_per_epoch * args.warmup, warmup_target=0.001, decay_steps=n_batches_per_epoch * (args.epochs - args.warmup), alpha=0.0)
     optimizer = AdamW(learning_rate=lr)
     lr_metric = helper_functions.get_lr_metric(optimizer)
     callbacks_array.append(tf.keras.callbacks.ReduceLROnPlateau(monitor='val_acc', factor=0.1,
