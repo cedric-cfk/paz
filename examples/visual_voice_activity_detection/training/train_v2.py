@@ -6,6 +6,9 @@ import helper_functions
 from codecarbon import OfflineEmissionsTracker
 from tensorflow.python.data import Dataset
 import tensorflow as tf
+
+from paz.paz.models.classification.cnn2Plus1 import CNN2Plus1D_Light, CNN2Plus1D_Filters, CNN2Plus1D_Layers
+
 keras = tf.keras
 from keras.losses import BinaryCrossentropy
 from keras.optimizers import AdamW, SGD  # TODO test a new docker with tensorflow 2.14
@@ -88,8 +91,16 @@ if args.model == "VVAD_LRS3":
                               patience=5, min_lr=0.001, cooldown=2))
 
     model.compile(loss=loss, optimizer=optimizer, metrics=[tf.keras.metrics.BinaryAccuracy(threshold=0.5), 'TrueNegatives', 'TruePositives', 'FalseNegatives', 'FalsePositives'])
-elif args.model == "CNN2Plus1D":
-    model = CNN2Plus1D(seed=args.seed)
+elif args.model.startswith("CNN2Plus1D"):
+    if args.model == "CNN2Plus1DLight":
+        model = CNN2Plus1D_Light(seed=args.seed)
+    elif args.model == "CNN2Plus1DFilters":
+        model = CNN2Plus1D_Filters(seed=args.seed)
+    elif args.model == "CNN2Plus1DLayers":
+        model = CNN2Plus1D_Layers(seed=args.seed)
+    else:
+        model = CNN2Plus1D(seed=args.seed)
+
     loss = BinaryCrossentropy()  # Alternative for two label Classifications: Hinge Loss or Squared Hinge Loss
     lr = CosineDecay(initial_learning_rate=0.0, warmup_steps=n_batches_per_epoch * args.warmup, warmup_target=0.001, decay_steps=n_batches_per_epoch * (args.epochs - args.warmup), alpha=0.0)
     optimizer = AdamW(learning_rate=lr)
