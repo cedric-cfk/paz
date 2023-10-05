@@ -59,8 +59,8 @@ try:
 except FileExistsError:
     pass
 
-generatorTrain = VVAD_LRS3(path=args.data_path, split="train", testing=args.testing, val_split=0.15, test_split=0.0)
-generatorVal = VVAD_LRS3(path=args.data_path, split="val", testing=args.testing, val_split=0.15, test_split=0.0)
+generatorTrain = VVAD_LRS3(path=args.data_path, split="train", testing=args.testing, val_split=0.1, test_split=0.1)
+generatorVal = VVAD_LRS3(path=args.data_path, split="val", testing=args.testing, val_split=0.1, test_split=0.1)
 
 datasetTrain = Dataset.from_generator(generatorTrain, output_signature=(tf.TensorSpec(shape=(38, 96, 96, 3)), tf.TensorSpec(shape=(), dtype=tf.int8)))
 datasetVal = Dataset.from_generator(generatorVal, output_signature=(tf.TensorSpec(shape=(38, 96, 96, 3)), tf.TensorSpec(shape=(), dtype=tf.int8)))
