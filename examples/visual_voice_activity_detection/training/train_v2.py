@@ -7,7 +7,7 @@ from codecarbon import OfflineEmissionsTracker
 from tensorflow.python.data import Dataset
 import tensorflow as tf
 
-from paz.paz.models.classification.cnn2Plus1 import CNN2Plus1D_Light, CNN2Plus1D_Filters, CNN2Plus1D_Layers
+from paz.models.classification.cnn2Plus1 import CNN2Plus1D_Light, CNN2Plus1D_Filters, CNN2Plus1D_Layers
 
 keras = tf.keras
 from keras.losses import BinaryCrossentropy
@@ -24,7 +24,7 @@ parser.add_argument('-p', '--data_path', type=str,
 parser.add_argument('-m', '--model', type=str,
                     default='VVAD_LRS3',
                     help='Model you want to train',
-                    choices=['VVAD_LRS3', 'CNN2Plus1D', 'MoViNets', 'ViViT'])
+                    choices=['VVAD_LRS3', 'CNN2Plus1D', 'CNN2Plus1DLight', 'CNN2Plus1DLayer', 'CNN2Plus1DFilter', 'MoViNets', 'ViViT'])
 parser.add_argument('-b', '--batch_size', type=int,
                     default=16,
                     help='Batch size for training and validation')
