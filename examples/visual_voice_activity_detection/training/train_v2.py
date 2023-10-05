@@ -2,13 +2,14 @@ import os
 import argparse
 import datetime
 import math
-import callbacks
+import helper_functions
 from codecarbon import OfflineEmissionsTracker
 from tensorflow.python.data import Dataset
 import tensorflow as tf
 keras = tf.keras
 from keras.losses import BinaryCrossentropy
-from keras.optimizers import Adam, SGD
+from keras.optimizers import AdamW, SGD  # TODO test a new docker with tensorflow 2.14
+from keras.optimizers.schedules.learning_rate_schedule import CosineDecay
 
 from paz.datasets import VVAD_LRS3
 from paz.models.classification import CNN2Plus1D, VVAD_LRS3_LSTM
@@ -25,8 +26,11 @@ parser.add_argument('-b', '--batch_size', type=int,
                     default=16,
                     help='Batch size for training and validation')
 parser.add_argument('-e', '--epochs', type=int,
-                    default=2,
+                    default=200,
                     help='Epochs for training')
+parser.add_argument('-w', '--warmup', type=int,
+                    default=5,
+                    help='Warmup epochs for training')
 parser.add_argument('-o', '--output_path', type=str,
                     default="./output/",
                     help='Path to directory for saving outputs.')
@@ -82,15 +86,18 @@ if args.model == "VVAD_LRS3":
     # optimizer = SGD(learning_rate=0.01, decay=0.01 / args.epochs)
     optimizer = SGD()
     callbacks_array.append(tf.keras.callbacks.ReduceLROnPlateau(monitor='val_acc', factor=0.1,
-                              patience=10, min_lr=0.001, cooldown=2))
+                              patience=5, min_lr=0.001, cooldown=2))
 
     model.compile(loss=loss, optimizer=optimizer, metrics=[tf.keras.metrics.BinaryAccuracy(threshold=0.5), 'TrueNegatives', 'TruePositives', 'FalseNegatives', 'FalsePositives'])
 elif args.model == "CNN2Plus1D":
     model = CNN2Plus1D(seed=args.seed)
     loss = BinaryCrossentropy()  # Alternative for two label Classifications: Hinge Loss or Squared Hinge Loss
-    optimizer = Adam(learning_rate=0.001)
-
-    model.compile(loss=loss, optimizer=optimizer, metrics=[tf.keras.metrics.BinaryAccuracy(threshold=0.5), 'TrueNegatives', 'TruePositives', 'FalseNegatives', 'FalsePositives'])
+    lr = CosineDecay(initial_learning_rate=0.0, warmup_steps=n_batches_per_epoch * args.warmup, warmup_target_lr=0.001, decay_steps=n_batches_per_epoch * args.epochs, alpha=0.0)
+    optimizer = AdamW(learning_rate=lr)
+    lr_metric = helper_functions.get_lr_metric(optimizer)
+    callbacks_array.append(tf.keras.callbacks.ReduceLROnPlateau(monitor='val_acc', factor=0.1,
+                              patience=10, min_lr=0.00001, cooldown=2))
+    model.compile(loss=loss, optimizer=optimizer, metrics=[lr_metric, tf.keras.metrics.BinaryAccuracy(threshold=0.5), 'TrueNegatives', 'TruePositives', 'FalseNegatives', 'FalsePositives'])
 elif args.model == 'MoViNets':
     # model = MoViNets()
     raise NotImplementedError
@@ -114,7 +121,9 @@ callbacks_array.append(tf.keras.callbacks.TensorBoard(
     update_freq='epoch'
 ))
 
-callbacks_array.append(callbacks.CSVLogger(filename=os.path.join(output_path, 'outputs_csv.log')))
+callbacks_array.append(keras.callbacks.EarlyStopping(monitor='val_acc', patience=20))
+
+callbacks_array.append(helper_functions.CSVLogger(filename=os.path.join(output_path, 'outputs_csv.log')))
 
 tracker = OfflineEmissionsTracker(project_name="VVAD", experiment_id=args.model, country_iso_code="DEU", output_dir=output_path, output_file="codecarbon", tracking_mode="process") # gpu_ids=[0,1,2,3], on_csv_write="append/update"
 tracker.start()

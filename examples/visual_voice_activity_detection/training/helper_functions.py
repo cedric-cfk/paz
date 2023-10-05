@@ -9,8 +9,12 @@ import time
 import numpy as np
 import tensorflow as tf
 keras = tf.keras
-from keras.utils import io_utils
 
+
+def get_lr_metric(optimizer):
+    def lr(y_true, y_pred):
+        return optimizer._decayed_lr(tf.float32)
+    return lr
 
 class CSVLogger(keras.callbacks.Callback):
     """Callback that streams epoch results to a CSV file.
@@ -34,7 +38,7 @@ class CSVLogger(keras.callbacks.Callback):
 
     def __init__(self, filename, separator=",", append=False):
         self.sep = separator
-        self.filename = io_utils.path_to_string(filename)
+        self.filename = tf.compat.path_to_str(filename)
         self.append = append
         self.writer = None
         self.keys = None
