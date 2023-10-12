@@ -7,3 +7,6 @@ from .cnn2Plus1 import CNN2Plus1D_Light
 from .cnn2Plus1 import CNN2Plus1D_Layers
 from .cnn2Plus1 import CNN2Plus1D_Filters
 from .vvad_lrs3 import VVAD_LRS3_LSTM
+from .MoViNet import MoViNetManuall
+from .MoViNet import MoViNet
+from .MoViNet import MoViNetTut
