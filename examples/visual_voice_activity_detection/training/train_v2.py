@@ -15,7 +15,7 @@ from keras.optimizers import AdamW, SGD  # TODO test a new docker with tensorflo
 from keras.optimizers.schedules import CosineDecay
 
 from paz.datasets import VVAD_LRS3
-from paz.models.classification import CNN2Plus1D, VVAD_LRS3_LSTM
+from paz.models.classification import CNN2Plus1D, VVAD_LRS3_LSTM, MoViNet
 
 parser = argparse.ArgumentParser(description='Paz VVAD Training')
 parser.add_argument('-p', '--data_path', type=str,
@@ -109,8 +109,10 @@ elif args.model.startswith("CNN2Plus1D"):
                               patience=10, min_lr=0.00001, cooldown=2))
     model.compile(loss=loss, optimizer=optimizer, metrics=[lr_metric, tf.keras.metrics.BinaryAccuracy(threshold=0.5), 'TrueNegatives', 'TruePositives', 'FalseNegatives', 'FalsePositives'])
 elif args.model == 'MoViNets':
-    # model = MoViNets()
-    raise NotImplementedError
+    model = MoViNet()
+    loss = BinaryCrossentropy()
+    optimizer = AdamW(learning_rate=0.001)
+    model.compile(loss=loss, optimizer=optimizer, metrics=[tf.keras.metrics.BinaryAccuracy(threshold=0.5)])
 elif args.model == 'ViViT':
     # model = ViViT()
     raise NotImplementedError
