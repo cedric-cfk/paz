@@ -11,8 +11,6 @@ import tensorflow as tf
 
 keras = tf.keras
 from keras.losses import BinaryCrossentropy
-from keras.optimizers import AdamW, SGD  # TODO test a new docker with tensorflow 2.14
-from keras.optimizers.schedules import CosineDecay
 
 from paz.datasets import VVAD_LRS3
 from paz.models.classification import CNN2Plus1D, VVAD_LRS3_LSTM, MoViNet, CNN2Plus1D_Light, CNN2Plus1D_Layers, CNN2Plus1D_Filters
@@ -22,6 +20,9 @@ parser = argparse.ArgumentParser(description='Paz VVAD Training')
 parser.add_argument('-p', '--data_path', type=str,
                     default='.keras/paz/datasets',
                     help='Path to dataset directory')
+parser.add_argument('--weight_path', type=str,
+                    default=None,
+                    help='Path to model weights')
 parser.add_argument('-m', '--model', type=str,
                     default='VVAD_LRS3',
                     help='Model you want to train',
@@ -50,32 +51,34 @@ datasetVal = datasetVal.apply(
     tf.data.experimental.assert_cardinality(len(generatorVal))
 )
 
-# TODO SHAPE Error: the model shape has a None in the front which is for the batch size but i dont know how to add it
-#  to the normal data...
-# tf.reshape(datasetVal, [None, 38, 96, 96, 3])
-
-# datasetTrain = datasetVal.padded_batch(2)  # args.batch_size
-
 # TODO should I do the predictions in Batches?
-# datasetVal = datasetVal.padded_batch(args.batch_size)
+datasetVal = datasetVal.padded_batch(1)  # args.batch_size
 
-model = CNN2Plus1D(weights="yes")
-# model = CNN2Plus1D_Light(weights="yes", input_shape=(38, 96, 96, 3))
-# model = CNN2Plus1D_Layers(weights="yes", input_shape=(38, 96, 96, 3))
-# model = VVAD_LRS3_LSTM(weights="yes", input_shape=(38, 96, 96, 3))
+model = None
+if args.weight_path is None:
+    model = CNN2Plus1D(weights="yes", input_shape=(38, 96, 96, 3))
+    # model = CNN2Plus1D_Light(weights="yes", input_shape=(38, 96, 96, 3))
+    # model = CNN2Plus1D_Layers(weights="yes", input_shape=(38, 96, 96, 3))
+    # model = VVAD_LRS3_LSTM(weights="yes", input_shape=(38, 96, 96, 3))
+
+else:
+    model = CNN2Plus1D(weights="yes", input_shape=(38, 96, 96, 3), tmp_weights_path=args.weight_path)
+    # model = CNN2Plus1D_Light(weights="yes", input_shape=(38, 96, 96, 3), tmp_weights_path=args.weight_path)
+    # model = CNN2Plus1D_Layers(weights="yes", input_shape=(38, 96, 96, 3))
+    # model = VVAD_LRS3_LSTM(weights="yes", input_shape=(38, 96, 96, 3))
+
 model.summary()
 
 # TODO for memory usage:
 # https://www.tensorflow.org/api_docs/python/tf/config/experimental/get_memory_info
 
-import tensorflow as tf
 from tensorflow.python.framework.convert_to_constants import convert_variables_to_constants_v2_as_graph
 
 if tf.config.list_physical_devices('GPU'):
     print(tf.config.experimental.get_memory_info("GPU:0"))
 else:
     print("No GPU found")
-model.predict(datasetVal, batch_size=1)
+model.predict(datasetVal)
 if tf.config.list_physical_devices('GPU'):
     print(tf.config.experimental.get_memory_info("GPU:0"))
 
