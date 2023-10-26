@@ -76,7 +76,7 @@ class CSVLoggerEval(keras.callbacks.Callback):
 
         logs["duration"] = duration
 
-        logs["sample_id"] = self.data_generator.getIndex()
+        logs["sample_id"] = self.data_generator.get_index()
 
         if tf.config.list_physical_devices('GPU'):
             logs["peak_memory"] = tf.config.experimental.get_memory_info("GPU:0")["peak"]
