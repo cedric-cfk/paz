@@ -25,9 +25,15 @@ class VVAD_LRS3(Generator):
         -[VVAD-LRS3](https://www.kaggle.com/datasets/adrianlubitz/vvadlrs3)
     """
     def __init__(
-            self, path=".keras/paz/datasets", split='train', val_split=0.2, test_split=0.1, image_size=(96, 96), testing=False):
+            self, path=".keras/paz/datasets", split='train', val_split=0.2, test_split=0.1, image_size=(96, 96), testing=False, evaluating=False):
         if split != 'train' and split != 'val' and split != 'test':
             raise ValueError('Invalid split name')
+        if val_split < 0.0 or val_split > 1.0:
+            raise ValueError('Invalid validation split')
+        if test_split < 0.0 or test_split > 1.0:
+            raise ValueError('Invalid test split')
+        if val_split + test_split > 1.0:
+            raise ValueError('The sum of val_split and test_split must be less than 1.0')
 
         path = os.path.join(path, 'vvadlrs3_faceImages_small.h5')
 
@@ -38,9 +44,11 @@ class VVAD_LRS3(Generator):
         self.val_split = val_split
         self.test_split = test_split
         self.testing = testing
+        self.evaluating = evaluating
+        self.index = []
 
         data = h5py.File(self.path, mode='r')
-        # NotTODO change back after testing
+
         self.total_size = 0
         if not testing:
             self.total_size = data.get('x_train').shape[0]
@@ -57,9 +65,6 @@ class VVAD_LRS3(Generator):
 
         self.indexes_val = []
         self.indexes_test = []
-
-        old_pos_size = len(indexes_pos)
-        old_neg_size = len(indexes_neg)
 
         # val split
         if self.val_split > 0.0:
@@ -100,12 +105,21 @@ class VVAD_LRS3(Generator):
             x_train = data.get("x_train")
             y_train = data.get("y_train")
         else:
+            indexes = reversed(indexes)
             x_train = data.get("x_test")
             y_train = data.get("y_test")
 
-        for i in indexes:
-            yield (x_train[i], y_train[i])
+        if self.evaluating:
+            for i in indexes:
+                self.index.append(i)
+                yield x_train[i], y_train[i]
+        else:
+            for i in indexes:
+                yield x_train[i], y_train[i]
         data.close()
+
+    def get_index(self):
+        return self.index.pop(0)
 
     def __len__(self):
         if self.total_size == -1:
