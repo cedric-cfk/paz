@@ -87,8 +87,8 @@ if args.model == "VVAD_LRS3":
     loss = BinaryCrossentropy()
     # optimizer = SGD(learning_rate=0.01, decay=0.01 / args.epochs)
     optimizer = SGD()
-    callbacks_array.append(tf.keras.callbacks.ReduceLROnPlateau(monitor='val_acc', factor=0.1,
-                              patience=5, min_lr=0.001, cooldown=2))
+    callbacks_array.append(tf.keras.callbacks.ReduceLROnPlateau(monitor='val_binary_accuracy', factor=0.1,
+                              patience=10, min_lr=0.001, cooldown=2))
 
     model.compile(loss=loss, optimizer=optimizer, metrics=[tf.keras.metrics.BinaryAccuracy(threshold=0.5), 'TrueNegatives', 'TruePositives', 'FalseNegatives', 'FalsePositives'])
 elif args.model.startswith("CNN2Plus1D"):
@@ -105,7 +105,7 @@ elif args.model.startswith("CNN2Plus1D"):
     lr = CosineDecay(initial_learning_rate=0.0, warmup_steps=n_batches_per_epoch * args.warmup, warmup_target=0.001, decay_steps=n_batches_per_epoch * (args.epochs - args.warmup), alpha=0.0)
     optimizer = AdamW(learning_rate=lr)
     lr_metric = helper_functions.get_lr_metric(optimizer)
-    callbacks_array.append(tf.keras.callbacks.ReduceLROnPlateau(monitor='val_acc', factor=0.1,
+    callbacks_array.append(tf.keras.callbacks.ReduceLROnPlateau(monitor='val_binary_accuracy', factor=0.1,
                               patience=10, min_lr=0.00001, cooldown=2))
     model.compile(loss=loss, optimizer=optimizer, metrics=[lr_metric, tf.keras.metrics.BinaryAccuracy(threshold=0.5), 'TrueNegatives', 'TruePositives', 'FalseNegatives', 'FalsePositives'])
 elif args.model == 'MoViNets':
@@ -133,7 +133,7 @@ callbacks_array.append(tf.keras.callbacks.TensorBoard(
     update_freq='epoch'
 ))
 
-callbacks_array.append(keras.callbacks.EarlyStopping(monitor='val_acc', patience=20))
+callbacks_array.append(keras.callbacks.EarlyStopping(monitor='val_binary_accuracy', patience=30))  # TODO maybe reduce to 20
 
 callbacks_array.append(helper_functions.CSVLogger(filename=os.path.join(output_path, 'outputs_csv.log')))
 
