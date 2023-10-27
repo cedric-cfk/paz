@@ -1,7 +1,7 @@
 import argparse
 import os.path
 
-import helper_functions
+import CSVLogger
 from tensorflow.python.data import Dataset
 import tensorflow as tf
 
@@ -83,7 +83,7 @@ else:
 if not tf.config.list_physical_devices('GPU'):
     print("No GPU was detected. No GPU memory usage will be logged.")
 model.predict(datasetVal,
-              callbacks=[helper_functions.CSVLoggerEval(args.output_path, args.model, data_generator=generatorVal)],
+              callbacks=[CSVLogger.CSVLoggerEval(args.output_path, args.model, data_generator=generatorVal)],
               max_queue_size=args.max_queue_size,
               workers=args.workers,
               use_multiprocessing=args.use_multiprocessing)
