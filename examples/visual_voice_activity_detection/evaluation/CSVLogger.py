@@ -11,7 +11,7 @@ import numpy as np
 import re
 import seaborn as sns  # only needed for confusion matrix
 import matplotlib.pyplot as plt
-import helper_functions
+import metrics_functions
 
 import tensorflow as tf
 keras = tf.keras
@@ -135,18 +135,18 @@ class CSVLoggerEval(keras.callbacks.Callback):
 
         logs = logs or {}
 
-        y_true, y_pred = helper_functions.get_true_and_prediction_labels(self.batch_csv_filepath)
+        y_true, y_pred = metrics_functions.get_true_and_prediction_labels(self.batch_csv_filepath)
 
-        logs["loss"] = helper_functions.get_bce_loss(y_true, y_pred)
+        logs["loss"] = metrics_functions.get_bce_loss(y_true, y_pred)
 
-        precision, recall, f1_score, accuracy = helper_functions.calculate_metrics(y_true, y_pred, self.model_name, self.conv_matrix_filepath)
+        precision, recall, f1_score, accuracy = metrics_functions.calculate_metrics(y_true, y_pred, self.model_name, self.conv_matrix_filepath)
 
         logs["precision"] = precision
         logs["recall"] = recall
         logs["f1_score"] = f1_score
         logs["accuracy"] = accuracy
 
-        logs["average_duration"] = helper_functions.average_prediction_duration(self.batch_csv_filepath)
+        logs["average_duration"] = metrics_functions.average_prediction_duration(self.batch_csv_filepath)
 
         def handle_value(k):
             is_zero_dim_ndarray = isinstance(k, np.ndarray) and k.ndim == 0
