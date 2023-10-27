@@ -1,5 +1,3 @@
-import random
-
 import tensorflow as tf
 
 keras = tf.keras
@@ -39,7 +37,7 @@ def VVAD_LRS3_LSTM(weights=None, input_shape=(38, 96, 96, 3), seed=305865):
     x = image
 
     base_model = MobileNet(
-        weights="imagenet", include_top=False, input_shape=input_shape[1:])
+        weights=None, include_top=False, input_shape=input_shape[1:])
 
     flatten = Flatten()(base_model.output)
     base_model = Model(base_model.input, flatten)
@@ -55,5 +53,9 @@ def VVAD_LRS3_LSTM(weights=None, input_shape=(38, 96, 96, 3), seed=305865):
     x = Dense(1, activation="sigmoid")(x)
 
     model = Model(inputs=image, outputs=x, name='Vvad_lrs3')
+
+    if weights is not None:
+        print("loading weights")
+        model.load_weights("/media/cedric/SpeedData/Uni_Seafile/Master_Thesis/CLUSTER_OUTPUTS/VVAD_LRS3/2023_08_28-20_46_56/checkpoints/weights-03.hdf5") # TODO Add download link
 
     return model
