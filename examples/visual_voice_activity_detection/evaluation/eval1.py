@@ -74,9 +74,9 @@ else:  # TODO Finish weights for all other models
     elif args.model == "CNN2Plus1DLight":
         model = CNN2Plus1D_Light(weights="yes", input_shape=(38, 96, 96, 3), tmp_weights_path=args.weight_path)
     elif args.model == "CNN2Plus1DLayers":
-        model = CNN2Plus1D_Layers(weights="yes", input_shape=(38, 96, 96, 3))
+        model = CNN2Plus1D_Layers(weights="yes", input_shape=(38, 96, 96, 3), tmp_weights_path=args.weight_path)
     elif args.model == "CNN2Plus1DFilters":
-        model = CNN2Plus1D_Filters(weights="yes", input_shape=(38, 96, 96, 3))
+        model = CNN2Plus1D_Filters(weights="yes", input_shape=(38, 96, 96, 3), tmp_weights_path=args.weight_path)
     else:
         raise NotImplemented("Not implemented yet")
 
