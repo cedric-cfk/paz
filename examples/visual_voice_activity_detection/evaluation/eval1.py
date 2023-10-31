@@ -66,7 +66,7 @@ if args.weight_path is None:
         model = CNN2Plus1D_Filters(weights="yes", input_shape=(38, 96, 96, 3))
     else:
         raise NotImplemented("Not implemented yet")
-else:
+else:  # TODO Finish weights for all other models
     if args.model == "VVAD_LRS3":
         model = VVAD_LRS3_LSTM(weights="yes", input_shape=(38, 96, 96, 3))
     elif args.model == "CNN2Plus1D":
@@ -79,15 +79,6 @@ else:
         model = CNN2Plus1D_Filters(weights="yes", input_shape=(38, 96, 96, 3))
     else:
         raise NotImplemented("Not implemented yet")
-
-if not tf.config.list_physical_devices('GPU'):
-    print("No GPU was detected. No GPU memory usage will be logged.")
-model.predict(datasetVal,
-              callbacks=[CSVLogger.CSVLoggerEval(args.output_path, args.model, data_generator=generatorVal)],
-              max_queue_size=args.max_queue_size,
-              workers=args.workers,
-              use_multiprocessing=args.use_multiprocessing)
-
 
 from tensorflow.python.framework.convert_to_constants import convert_variables_to_constants_v2_as_graph
 def get_flops(model):
@@ -102,6 +93,19 @@ def get_flops(model):
         flops = tf.compat.v1.profiler.profile(graph=graph, run_meta=run_meta, cmd="op", options=opts)
         return flops.total_float_ops
 
+
+
+parameters = int(model.count_params())
+flops = get_flops(model)
+print("The number of parameters of the model is: {}".format(parameters),flush=True)
 # model.summary()
 # keras.utils.plot_model(model, expand_nested=True, dpi=60, show_shapes=True)
-# print("The FLOPs is:{}".format(get_flops(model)) ,flush=True )
+print("The needed FLOPs of the model is: {}".format(flops), flush=True)
+
+if not tf.config.list_physical_devices('GPU'):
+    print("No GPU was detected. No GPU memory usage will be logged.")
+model.predict(datasetVal,
+              callbacks=[CSVLogger.CSVLoggerEval(args.output_path, args.model, data_generator=generatorVal, params=parameters, flops=flops)],
+              max_queue_size=args.max_queue_size,
+              workers=args.workers,
+              use_multiprocessing=args.use_multiprocessing)

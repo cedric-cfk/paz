@@ -39,7 +39,7 @@ class CSVLoggerEval(keras.callbacks.Callback):
             data_generator: The data generator that is used for the evaluation.
                 Used to get the id of the current sample.
         """
-    def __init__(self, output_path, model_name, separator=",", append=False, data_generator=None):
+    def __init__(self, output_path, model_name, separator=",", append=False, data_generator=None, params=None, flops=None):
         self.sep = separator
         self.batch_csv_filepath = tf.compat.path_to_str(os.path.join(output_path, model_name, "training_batch.log"))
         self.epoch_csv_filepath = tf.compat.path_to_str(os.path.join(output_path, model_name, "training_epoch.log"))
@@ -50,6 +50,8 @@ class CSVLoggerEval(keras.callbacks.Callback):
         self.append_header = True
         self.model_name = model_name
         self.data_generator = data_generator
+        self.parameters = int(params)
+        self.flops = flops
         self.csv_file = None
         self.epoch_time_start = None
         super().__init__()
@@ -147,6 +149,12 @@ class CSVLoggerEval(keras.callbacks.Callback):
         logs["accuracy"] = accuracy
 
         logs["average_duration"] = metrics_functions.average_prediction_duration(self.batch_csv_filepath)
+
+        if self.parameters is not None:
+            logs["parameters"] = self.parameters
+
+        if self.flops is not None:
+            logs["flops"] = self.flops
 
         def handle_value(k):
             is_zero_dim_ndarray = isinstance(k, np.ndarray) and k.ndim == 0
