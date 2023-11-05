@@ -1,5 +1,3 @@
-import random
-
 import tensorflow as tf
 
 keras = tf.keras
@@ -8,7 +6,7 @@ from keras.layers import (Input, BatchNormalization, Flatten, Dense, LSTM, TimeD
 from keras.applications.mobilenet import MobileNet
 import random
 
-def VVAD_LRS3_LSTM(weights=None, input_shape=(38, 96, 96, 3), seed=305865):
+def VVAD_LRS3_LSTM(weights=None, input_shape=(38, 96, 96, 3), seed=305865, tmp_weights_path="../../../../CLUSTER_OUTPUTS/VVAD_LRS3/2023_10_30-09_51_57/vvad_lrs3-weights-57.hdf5"):
     """Binary Classification for videos with 2+1D CNNs.
     # Arguments
         weights: String, path to the weights file to load. TODO add weights implementation when weights are available
@@ -39,7 +37,7 @@ def VVAD_LRS3_LSTM(weights=None, input_shape=(38, 96, 96, 3), seed=305865):
     x = image
 
     base_model = MobileNet(
-        weights="imagenet", include_top=False, input_shape=input_shape[1:])
+        weights=None, include_top=False, input_shape=input_shape[1:])
 
     flatten = Flatten()(base_model.output)
     base_model = Model(base_model.input, flatten)
@@ -55,5 +53,9 @@ def VVAD_LRS3_LSTM(weights=None, input_shape=(38, 96, 96, 3), seed=305865):
     x = Dense(1, activation="sigmoid")(x)
 
     model = Model(inputs=image, outputs=x, name='Vvad_lrs3')
+
+    if weights is not None:
+        print("loading weights")
+        model.load_weights(tmp_weights_path)  # TODO Add download link
 
     return model
