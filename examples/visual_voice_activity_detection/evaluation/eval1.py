@@ -68,7 +68,7 @@ if args.weight_path is None:
         raise NotImplemented("Not implemented yet")
 else:  # TODO Finish weights for all other models
     if args.model == "VVAD_LRS3":
-        model = VVAD_LRS3_LSTM(weights="yes", input_shape=(38, 96, 96, 3))
+        model = VVAD_LRS3_LSTM(weights="yes", input_shape=(38, 96, 96, 3), tmp_weights_path=args.weight_path)
     elif args.model == "CNN2Plus1D":
         model = CNN2Plus1D(weights="yes", input_shape=(38, 96, 96, 3), tmp_weights_path=args.weight_path)
     elif args.model == "CNN2Plus1DLight":
