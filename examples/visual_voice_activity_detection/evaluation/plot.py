@@ -5,12 +5,13 @@ import matplotlib.pyplot as plt
 import matplotlib
 import numpy as np
 import pandas as pd
+from paz.models.classification.cnn2Plus1 import CNN2Plus1D, CNN2Plus1D_Filters, CNN2Plus1D_Layers, CNN2Plus1D_Light, CNN2Plus1D_18
 
 matplotlib.use("pgf")
 matplotlib.rcParams.update({
     "pgf.texsystem": "pdflatex",
     'font.family': 'serif',
-    'text.usetex': True,
+    # 'text.usetex': True,  # Causes errors in latex
     'pgf.rcfonts': False,
 })
 
@@ -36,7 +37,7 @@ class Plotter:
             print("Data path is not existing. Exiting...")
             exit()
 
-        self.model_name_dict = {'VVAD_LRS3': 'Base', 'CNN2Plus1D': '(2+1)D', 'CNN2Plus1DFilters': '(2+1)D Filters', 'CNN2Plus1DLayers': '(2+1)D Layers', 'CNN2Plus1DLight': '(2+1)D Light'}
+        self.model_name_dict = {'VVAD_LRS3': 'Base', 'CNN2Plus1D': 'R(2+1)D', 'CNN2Plus1DFilters': 'R(2+1)D Filters', 'CNN2Plus1DLayers': 'R(2+1)D Layers', 'CNN2Plus1DLight': 'R(2+1)D Light', 'CNN2Plus1D18': 'R(2+1)D-18'}
 
         # NOTE: weight number is not equal to the index in the csv files. Weight number is index + 1
         self.model_weights = {'VVAD_LRS3': 57, 'CNN2Plus1D': 30, 'CNN2Plus1DFilters': 23, 'CNN2Plus1DLayers': 17, 'CNN2Plus1DLight': 55}
@@ -207,7 +208,7 @@ class Plotter:
         plt.xlabel("Model Names")
         plt.ylabel(label_name)
         plt.setp(ax.get_xticklabels(), rotation=15, horizontalalignment='center')
-        if metric== "acc":
+        if metric == "acc":
             plt.legend(loc='lower right')
         else:
             plt.legend(loc='upper right')
@@ -295,7 +296,7 @@ class Plotter:
 
         # TODO When using multiple Models group them by only using one plot per model
         for i in range(len(self.model_names)):
-            plt.plot(x_axis[i], y_axis[i], markers[i], label=self.model_names[i])
+            plt.plot(x_axis[i], y_axis[i], markers[i], label=self.model_name_dict[self.model_names[i]])
 
         plt.title(y_label + " vs " + x_label + " across models")
         plt.xlabel(x_label)
@@ -449,13 +450,63 @@ class Plotter:
         # plt.show()
 
 
+    def static_bar_plot(self):
+        output_path = os.path.join(self.output_path, "static_bar_plot")
+
+        try:
+            pass
+            os.mkdir(output_path)
+        except FileExistsError:
+            pass
+        try:
+            os.mkdir(output_path + "/png")
+        except FileExistsError:
+            pass
+        try:
+            os.mkdir(output_path + "/pgf")
+        except FileExistsError:
+            pass
+
+        metric = "Params"
+
+        if metric == "Params":
+            print("Plotting Parameters across models...")
+            label_name = "Parameters"
+            eval_column_header = "parameters"
+            y_lim = (0, 20000000)
+            x = [self.model_name_dict["CNN2Plus1D18"], self.model_name_dict["CNN2Plus1DFilters"], self.model_name_dict["CNN2Plus1DLayers"], self.model_name_dict["CNN2Plus1D"], self.model_name_dict["CNN2Plus1DLight"]]
+            y = [int(CNN2Plus1D_18(input_shape=(38, 96, 96, 3)).count_params()), int(CNN2Plus1D_Filters(input_shape=(38, 96, 96, 3)).count_params()), int(CNN2Plus1D_Layers(input_shape=(38, 96, 96, 3)).count_params()), int(CNN2Plus1D(input_shape=(38, 96, 96, 3)).count_params()), int(CNN2Plus1D_Light(input_shape=(38, 96, 96, 3)).count_params())]
+        else:
+            return
+
+        plt.figure()
+        ax = plt.gca()
+
+        print(x)
+        plt.bar(x, y, color=['red', 'blue', 'purple', 'green', 'orange'])
+        plt.ylim(y_lim[0], y_lim[1])
+
+        # TODO Maybe print the values on top of the bars?
+        plt.title(label_name + " across models")
+        plt.xlabel("Model Names")
+        plt.ylabel(label_name)
+        # plt.legend()
+        plt.setp(ax.get_xticklabels(), rotation=15, horizontalalignment='center')
+
+        plt.savefig(output_path + "/png/" + metric + ".png")
+        plt.savefig(output_path + "/pgf/" + metric + ".pgf")
+        # plt.show()
+
+
 # Plotter().performance_per_models("all", "all")
 # Plotter().performance_per_models("CNN2Plus1D", "acc")
 
 # Plotter().performance_across_models("all")
 
-Plotter().performance_vs_efficiency_across_weights("all", "all")
+# Plotter().performance_vs_efficiency_across_weights("all", "all")
 
 # Plotter().all_metrics_across_models_table()
 
 # Plotter().all_metrics_across_models("all")
+
+Plotter().static_bar_plot()
