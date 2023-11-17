@@ -40,9 +40,11 @@ try:
 except FileExistsError:
     pass
 
-generatorVal = VVAD_LRS3(path=args.data_path, split="val", testing=args.testing, val_split=0.1, test_split=0.1, evaluating=True)
+length = 38
 
-datasetVal = Dataset.from_generator(generatorVal, output_signature=(tf.TensorSpec(shape=(38, 96, 96, 3)), tf.TensorSpec(shape=(), dtype=tf.int8)))
+generatorVal = VVAD_LRS3(path=args.data_path, split="val", testing=args.testing, val_split=0.1, test_split=0.1, evaluating=True, reduction_method="cut", reduction_length=length)
+
+datasetVal = Dataset.from_generator(generatorVal, output_signature=(tf.TensorSpec(shape=(length, 96, 96, 3)), tf.TensorSpec(shape=(), dtype=tf.int8)))
 
 # Add length of dataset. This needs to be manually set because we use from generator.
 datasetVal = datasetVal.apply(
@@ -59,7 +61,7 @@ if args.weight_path is None:
     elif args.model == "CNN2Plus1D":
         model = CNN2Plus1D(weights="yes", input_shape=(38, 96, 96, 3))
     elif args.model == "CNN2Plus1DLight":
-        model = CNN2Plus1D_Light(weights="yes", input_shape=(38, 96, 96, 3))
+        model = CNN2Plus1D_Light(weights="yes", input_shape=(length, 96, 96, 3))
     elif args.model == "CNN2Plus1DLayers":
         model = CNN2Plus1D_Layers(weights="yes", input_shape=(38, 96, 96, 3))
     elif args.model == "CNN2Plus1DFilters":
@@ -97,7 +99,7 @@ def get_flops(model):
 
 parameters = int(model.count_params())
 flops = get_flops(model)
-print("The number of parameters of the model is: {}".format(parameters),flush=True)
+print("The number of parameters of the model is: {}".format(parameters), flush=True)
 # model.summary()
 # keras.utils.plot_model(model, expand_nested=True, dpi=60, show_shapes=True)
 print("The needed FLOPs of the model is: {}".format(flops), flush=True)
