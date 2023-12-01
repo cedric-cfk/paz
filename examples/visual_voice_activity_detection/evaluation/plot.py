@@ -13,6 +13,7 @@ matplotlib.rcParams.update({
     'font.family': 'serif',
     # 'text.usetex': True,  # Causes errors in latex
     'pgf.rcfonts': False,
+    'figure.autolayout': True,
 })
 
 class Plotter:
@@ -23,7 +24,7 @@ class Plotter:
         print("Loading eval data...")
 
         if os.path.exists(eval_path):
-            self.model_paths = list(set(glob(eval_path + "/*/")) - set(glob(eval_path + "/plots/")))
+            self.model_paths = list(set(glob(eval_path + "/*/")) - set(glob(eval_path + "/plots/")) - set(glob(eval_path + "/test/")) - set(glob(eval_path + "/test_dataset/")))
             self.model_names = [os.path.basename(os.path.dirname(path)) for path in self.model_paths]
 
             self.output_path = os.path.join(eval_path, "plots")
@@ -68,7 +69,7 @@ class Plotter:
             label_name = "Loss"
             train_column_header = "loss"
             val_column_header = "val_loss"
-            y_lim = (0.0, 0.7)
+            y_lim = (0.0, 0.9)
         else:
             print("Metric not implemented. Chose one of the following: \"acc\", \"loss\" Exiting...")
             return
@@ -89,6 +90,10 @@ class Plotter:
         except FileExistsError:
             pass
 
+        matplotlib.rcParams.update({
+            'font.size': 18,
+        })
+
         i = self.model_names.index(model_name)
 
         train_y = metrics_functions.get_data_column(self.model_paths[i] + "training_train.log", train_column_header)
@@ -105,11 +110,13 @@ class Plotter:
         if label_name == "Accuracy":
             x_extreme = x[np.argmax(val_y)]
             y_extreme = val_y.max()
-            arr_height = 0.5
+            arr_height = 0.7
         else:
             x_extreme = x[np.argmin(val_y)]
             y_extreme = val_y.min()
-            arr_height = 0.9
+            arr_height = 0.6
+            if model_name == "VVAD_LRS3":
+                arr_height = 0.95
 
         text = "Best " + label_name + "\n x={:.0f}, y={:.3f}".format(x_extreme, y_extreme)
         if not ax:
