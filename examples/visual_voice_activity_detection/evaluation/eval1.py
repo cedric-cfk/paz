@@ -42,7 +42,12 @@ except FileExistsError:
 
 length = 38
 
-generatorVal = VVAD_LRS3(path=args.data_path, split="val", testing=args.testing, val_split=0.1, test_split=0.1, evaluating=True, reduction_method="cut", reduction_length=length)
+if args.testing:
+    generatorVal = VVAD_LRS3(path=args.data_path, split="val", testing=args.testing, val_split=1.0, test_split=0.0,
+                             evaluating=True, reduction_method="cut", reduction_length=length)
+else:
+    generatorVal = VVAD_LRS3(path=args.data_path, split="val", testing=args.testing, val_split=0.1, test_split=0.1,
+                             evaluating=True, reduction_method="cut", reduction_length=length)
 
 datasetVal = Dataset.from_generator(generatorVal, output_signature=(tf.TensorSpec(shape=(length, 96, 96, 3)), tf.TensorSpec(shape=(), dtype=tf.int8)))
 
