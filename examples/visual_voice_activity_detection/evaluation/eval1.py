@@ -51,7 +51,8 @@ datasetVal = datasetVal.apply(
     tf.data.experimental.assert_cardinality(len(generatorVal))
 )
 
-# TODO should I do the predictions in Batches?
+datasetVal = datasetVal.cache().prefetch(buffer_size=tf.data.AUTOTUNE)
+
 datasetVal = datasetVal.padded_batch(1)  # args.batch_size
 
 model = None
@@ -96,7 +97,6 @@ def get_flops(model):
         return flops.total_float_ops
 
 
-
 parameters = int(model.count_params())
 flops = get_flops(model)
 print("The number of parameters of the model is: {}".format(parameters), flush=True)
@@ -106,8 +106,16 @@ print("The needed FLOPs of the model is: {}".format(flops), flush=True)
 
 if not tf.config.list_physical_devices('GPU'):
     print("No GPU was detected. No GPU memory usage will be logged.")
+
+csv_logger = CSVLogger.CSVLoggerEval(args.output_path, args.model, data_generator=generatorVal, params=parameters, flops=flops)
+
 model.predict(datasetVal,
-              callbacks=[CSVLogger.CSVLoggerEval(args.output_path, args.model, data_generator=generatorVal, params=parameters, flops=flops)],
+              max_queue_size=args.max_queue_size,
+              workers=args.workers,
+              use_multiprocessing=args.use_multiprocessing)
+
+model.predict(datasetVal,
+              callbacks=[csv_logger],
               max_queue_size=args.max_queue_size,
               workers=args.workers,
               use_multiprocessing=args.use_multiprocessing)
