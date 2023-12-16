@@ -24,7 +24,8 @@ parser.add_argument('-p', '--data_path', type=str,
 parser.add_argument('-m', '--model', type=str,
                     default='VVAD_LRS3',
                     help='Model you want to train',
-                    choices=['VVAD_LRS3', 'CNN2Plus1D', 'CNN2Plus1DLight', 'CNN2Plus1DLayers', 'CNN2Plus1DFilters', 'MoViNets', 'ViViT'])
+                    choices=['VVAD_LRS3', 'CNN2Plus1D', 'CNN2Plus1DLight', 'CNN2Plus1DLayers', 'CNN2Plus1DFilters',
+                             'MoViNets', 'ViViT'])
 parser.add_argument('-b', '--batch_size', type=int,
                     default=16,
                     help='Batch size for training and validation')
@@ -42,16 +43,34 @@ parser.add_argument('--use_multiprocessing', action='store_true', help='Use mult
 parser.add_argument('--workers', type=int, default=5, help='Number of workers for data loading')
 parser.add_argument('--max_queue_size', type=int, default=5, help='Max queue size for data loading')
 parser.add_argument('--seed', type=int, default=305865, help='Seed for random number generators')
+parser.add_argument('--reduced_frames', type=int, default=0,
+                    help='Amount of frames in fps to reduce the dataset video length to. 25 is the max fps. '
+                         + '0 means no reduction. (Only available for CNN2Plus1D models)')
+parser.add_argument('--reduce_frames_type', type=str, default='cut',
+                    help="Method used to reduce the dataset video length If 'cut' is selected, the video is cut to "
+                         + "reduced_frames. If 'reduce' is selected, reduced_frames many single frames of the video"
+                         + " are removed form the clip. (Only available for CNN2Plus1D models)",
+                    choices=['reduce', 'cut'])
+parser.add_argument('--reduced_frames_tmp_weights_path', type=str, default=None,
+                    help="Path to the tmp weights file used for the reduced_frames model. "
+                         + "Only used when reduced_frames is set. (Only available for CNN2Plus1D models)")
 
 args = parser.parse_args()
 
-output_path = os.path.join(args.output_path, args.model, datetime.datetime.now().strftime("%Y_%m_%d-%H_%M_%S"))
+if args.reduced_frames > 0:
+    output_path = os.path.join(args.output_path, args.model + "_" + args.reduced_frames,
+                               datetime.datetime.now().strftime("%Y_%m_%d-%H_%M_%S"))
+else:
+    output_path = os.path.join(args.output_path, args.model, datetime.datetime.now().strftime("%Y_%m_%d-%H_%M_%S"))
 try:
-    os.mkdir(os.path.join(args.output_path, args.model))
+    if args.reduced_frames > 0:
+        os.mkdir(os.path.join(args.output_path, args.model + "_" + args.reduced_frames))
+    else:
+        os.mkdir(os.path.join(args.output_path, args.model))
 except FileExistsError:
     pass
 try:
-    os.mkdir(os.path.join(output_path))
+    os.mkdir(output_path)
 except FileExistsError:
     pass
 try:
@@ -59,11 +78,19 @@ try:
 except FileExistsError:
     pass
 
-generatorTrain = VVAD_LRS3(path=args.data_path, split="train", testing=args.testing, val_split=0.1, test_split=0.1)
-generatorVal = VVAD_LRS3(path=args.data_path, split="val", testing=args.testing, val_split=0.1, test_split=0.1)
+if args.reduce_frames > 0:
+    generatorTrain = VVAD_LRS3(path=args.data_path, split="train", testing=args.testing, val_split=0.1, test_split=0.1,
+                               reduction_method=args.reduce_frames_type, reduction_length=args.reduce_frames)
+    generatorVal = VVAD_LRS3(path=args.data_path, split="val", testing=args.testing, val_split=0.1, test_split=0.1,
+                             reduction_method=args.reduce_frames_type, reduction_length=args.reduce_frames)
+else:
+    generatorTrain = VVAD_LRS3(path=args.data_path, split="train", testing=args.testing, val_split=0.1, test_split=0.1)
+    generatorVal = VVAD_LRS3(path=args.data_path, split="val", testing=args.testing, val_split=0.1, test_split=0.1)
 
-datasetTrain = Dataset.from_generator(generatorTrain, output_signature=(tf.TensorSpec(shape=(38, 96, 96, 3)), tf.TensorSpec(shape=(), dtype=tf.int8)))
-datasetVal = Dataset.from_generator(generatorVal, output_signature=(tf.TensorSpec(shape=(38, 96, 96, 3)), tf.TensorSpec(shape=(), dtype=tf.int8)))
+datasetTrain = Dataset.from_generator(generatorTrain, output_signature=(
+tf.TensorSpec(shape=(38, 96, 96, 3)), tf.TensorSpec(shape=(), dtype=tf.int8)))
+datasetVal = Dataset.from_generator(generatorVal, output_signature=(
+tf.TensorSpec(shape=(38, 96, 96, 3)), tf.TensorSpec(shape=(), dtype=tf.int8)))
 
 # Add length of dataset. This needs to be manually set because we use from generator.
 datasetTrain = datasetTrain.apply(
@@ -88,26 +115,47 @@ if args.model == "VVAD_LRS3":
     # optimizer = SGD(learning_rate=0.01, decay=0.01 / args.epochs)
     optimizer = SGD()
     callbacks_array.append(tf.keras.callbacks.ReduceLROnPlateau(monitor='val_binary_accuracy', factor=0.1,
-                              patience=10, min_lr=0.001, cooldown=2))
+                                                                patience=10, min_lr=0.001, cooldown=2))
 
-    model.compile(loss=loss, optimizer=optimizer, metrics=[tf.keras.metrics.BinaryAccuracy(threshold=0.5), 'TrueNegatives', 'TruePositives', 'FalseNegatives', 'FalsePositives'])
+    model.compile(loss=loss, optimizer=optimizer,
+                  metrics=[tf.keras.metrics.BinaryAccuracy(threshold=0.5), 'TrueNegatives', 'TruePositives',
+                           'FalseNegatives', 'FalsePositives'])
 elif args.model.startswith("CNN2Plus1D"):
-    if args.model == "CNN2Plus1DLight":
-        model = CNN2Plus1D_Light(seed=args.seed)
-    elif args.model == "CNN2Plus1DFilters":
-        model = CNN2Plus1D_Filters(seed=args.seed)
-    elif args.model == "CNN2Plus1DLayers":
-        model = CNN2Plus1D_Layers(seed=args.seed)
+    if args.reduce_frames > 0:  # TODO ADD this tmp weights path
+        if args.model == "CNN2Plus1DLight":
+            model = CNN2Plus1D_Light(weights="yes", seed=args.seed)
+        elif args.model == "CNN2Plus1DFilters":
+            model = CNN2Plus1D_Filters(weights="yes", seed=args.seed)
+        elif args.model == "CNN2Plus1DLayers":
+            model = CNN2Plus1D_Layers(weights="yes", seed=args.seed)
+        else:
+            model = CNN2Plus1D(weights="yes", seed=args.seed)
     else:
-        model = CNN2Plus1D(seed=args.seed)
+        if args.model == "CNN2Plus1DLight":
+            model = CNN2Plus1D_Light(seed=args.seed)
+        elif args.model == "CNN2Plus1DFilters":
+            model = CNN2Plus1D_Filters(seed=args.seed)
+        elif args.model == "CNN2Plus1DLayers":
+            model = CNN2Plus1D_Layers(seed=args.seed)
+        else:
+            model = CNN2Plus1D(seed=args.seed)
 
-    loss = BinaryCrossentropy()  # Alternative for two label Classifications: Hinge Loss or Squared Hinge Loss
-    lr = CosineDecay(initial_learning_rate=0.0, warmup_steps=n_batches_per_epoch * args.warmup, warmup_target=0.001, decay_steps=n_batches_per_epoch * (args.epochs - args.warmup), alpha=0.0)
+    loss = BinaryCrossentropy()
+
+    if args.reduce_frames > 0:  # Only used then reduce_frames is set
+        lr = CosineDecay(initial_learning_rate=0.0001, decay_steps=n_batches_per_epoch * (args.epochs - args.warmup),
+                         alpha=0.0)
+    else:
+        lr = CosineDecay(initial_learning_rate=0.0, warmup_steps=n_batches_per_epoch * args.warmup, warmup_target=0.001,
+                         decay_steps=n_batches_per_epoch * (args.epochs - args.warmup), alpha=0.0)
+
     optimizer = AdamW(learning_rate=lr)
     lr_metric = helper_functions.get_lr_metric(optimizer)
     callbacks_array.append(tf.keras.callbacks.ReduceLROnPlateau(monitor='val_binary_accuracy', factor=0.1,
-                              patience=10, min_lr=0.00001, cooldown=2))
-    model.compile(loss=loss, optimizer=optimizer, metrics=[lr_metric, tf.keras.metrics.BinaryAccuracy(threshold=0.5), 'TrueNegatives', 'TruePositives', 'FalseNegatives', 'FalsePositives'])
+                                                                patience=10, min_lr=0.00001, cooldown=2))
+    model.compile(loss=loss, optimizer=optimizer,
+                  metrics=[lr_metric, tf.keras.metrics.BinaryAccuracy(threshold=0.5), 'TrueNegatives', 'TruePositives',
+                           'FalseNegatives', 'FalsePositives'])
 elif args.model == 'MoViNets':
     model = MoViNet()
     loss = BinaryCrossentropy()
@@ -117,7 +165,7 @@ elif args.model == 'ViViT':
     # model = ViViT()
     raise NotImplementedError
 else:
-  raise Exception("Model name not found")
+    raise Exception("Model name not found")
 
 # Checkpoint callback that saves the weights of the network every 20 epochs
 callbacks_array.append(tf.keras.callbacks.ModelCheckpoint(
@@ -128,24 +176,28 @@ callbacks_array.append(tf.keras.callbacks.ModelCheckpoint(
 ))
 
 callbacks_array.append(tf.keras.callbacks.TensorBoard(
-    log_dir=os.path.join(output_path, 'tensorboard_logs'),  # os.path.join(args.output_path, args.model, 'tensorboard_logs'),
-    # don't think I need weight histogramms histogram_freq=1,
+    log_dir=os.path.join(output_path, 'tensorboard_logs'),
     update_freq='epoch'
 ))
 
-callbacks_array.append(keras.callbacks.EarlyStopping(monitor='val_binary_accuracy', patience=30))  # TODO maybe reduce to 20
+if args.reduce_frames > 0:  # Only used then reduce_frames is set
+    callbacks_array.append(keras.callbacks.EarlyStopping(monitor='val_binary_accuracy', patience=5))
+else:
+    callbacks_array.append(keras.callbacks.EarlyStopping(monitor='val_binary_accuracy', patience=15))
 
 callbacks_array.append(helper_functions.CSVLogger(filename=os.path.join(output_path, 'outputs_csv.log')))
 
-tracker = OfflineEmissionsTracker(project_name="VVAD", experiment_id=args.model, country_iso_code="DEU", output_dir=output_path, output_file="codecarbon", tracking_mode="process") # gpu_ids=[0,1,2,3], on_csv_write="append/update"
+tracker = OfflineEmissionsTracker(project_name="VVAD", experiment_id=args.model, country_iso_code="DEU",
+                                  output_dir=output_path, output_file="codecarbon",
+                                  tracking_mode="process")  # gpu_ids=[0,1,2,3], on_csv_write="append/update"
 tracker.start()
 
-model.fit(x = datasetTrain,
-                    epochs = args.epochs,
-                    callbacks=callbacks_array,
-                    validation_data = datasetVal,
-                    use_multiprocessing=args.use_multiprocessing,
-                    workers=args.workers,
-                    max_queue_size=args.max_queue_size)
+model.fit(x=datasetTrain,
+          epochs=args.epochs,
+          callbacks=callbacks_array,
+          validation_data=datasetVal,
+          use_multiprocessing=args.use_multiprocessing,
+          workers=args.workers,
+          max_queue_size=args.max_queue_size)
 
 tracker.stop()
