@@ -100,6 +100,9 @@ datasetVal = datasetVal.apply(
     tf.data.experimental.assert_cardinality(len(generatorVal))
 )
 
+datasetTrain = datasetTrain.cache().prefetch(buffer_size=tf.data.AUTOTUNE)
+datasetVal = datasetVal.cache().prefetch(buffer_size=tf.data.AUTOTUNE)
+
 datasetTrain = datasetTrain.padded_batch(args.batch_size)
 datasetVal = datasetVal.padded_batch(args.batch_size)
 
