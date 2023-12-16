@@ -43,7 +43,7 @@ parser.add_argument('--use_multiprocessing', action='store_true', help='Use mult
 parser.add_argument('--workers', type=int, default=5, help='Number of workers for data loading')
 parser.add_argument('--max_queue_size', type=int, default=5, help='Max queue size for data loading')
 parser.add_argument('--seed', type=int, default=305865, help='Seed for random number generators')
-parser.add_argument('--reduced_frames', type=int, default=0,
+parser.add_argument('--reduced_frames', type=float, default=0.0,
                     help='Amount of frames in fps to reduce the dataset video length to. 25 is the max fps. '
                          + '0 means no reduction. (Only available for CNN2Plus1D models)')
 parser.add_argument('--reduce_frames_type', type=str, default='cut',
