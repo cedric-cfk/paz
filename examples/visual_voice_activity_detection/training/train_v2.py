@@ -58,13 +58,13 @@ parser.add_argument('--reduced_frames_tmp_weights_path', type=str, default=None,
 args = parser.parse_args()
 
 if args.reduced_frames > 0:
-    output_path = os.path.join(args.output_path, args.model + "_" + args.reduced_frames,
+    output_path = os.path.join(args.output_path, args.model + "_" + str(args.reduced_frames),
                                datetime.datetime.now().strftime("%Y_%m_%d-%H_%M_%S"))
 else:
     output_path = os.path.join(args.output_path, args.model, datetime.datetime.now().strftime("%Y_%m_%d-%H_%M_%S"))
 try:
     if args.reduced_frames > 0:
-        os.mkdir(os.path.join(args.output_path, args.model + "_" + args.reduced_frames))
+        os.mkdir(os.path.join(args.output_path, args.model + "_" + str(args.reduced_frames)))
     else:
         os.mkdir(os.path.join(args.output_path, args.model))
 except FileExistsError:
