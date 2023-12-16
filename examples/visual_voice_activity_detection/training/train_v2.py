@@ -46,7 +46,7 @@ parser.add_argument('--seed', type=int, default=305865, help='Seed for random nu
 parser.add_argument('--reduced_frames', type=float, default=0.0,
                     help='Amount of frames in fps to reduce the dataset video length to. 25 is the max fps. '
                          + '0 means no reduction. (Only available for CNN2Plus1D models)')
-parser.add_argument('--reduce_frames_type', type=str, default='cut',
+parser.add_argument('--reduced_frames_type', type=str, default='cut',
                     help="Method used to reduce the dataset video length If 'cut' is selected, the video is cut to "
                          + "reduced_frames. If 'reduce' is selected, reduced_frames many single frames of the video"
                          + " are removed form the clip. (Only available for CNN2Plus1D models)",
@@ -78,11 +78,11 @@ try:
 except FileExistsError:
     pass
 
-if args.reduce_frames > 0:
+if args.reduced_frames > 0.0:
     generatorTrain = VVAD_LRS3(path=args.data_path, split="train", testing=args.testing, val_split=0.1, test_split=0.1,
-                               reduction_method=args.reduce_frames_type, reduction_length=args.reduce_frames)
+                               reduction_method=args.reduced_frames_type, reduction_length=args.reduced_frames)
     generatorVal = VVAD_LRS3(path=args.data_path, split="val", testing=args.testing, val_split=0.1, test_split=0.1,
-                             reduction_method=args.reduce_frames_type, reduction_length=args.reduce_frames)
+                             reduction_method=args.reduced_frames_type, reduction_length=args.reduced_frames)
 else:
     generatorTrain = VVAD_LRS3(path=args.data_path, split="train", testing=args.testing, val_split=0.1, test_split=0.1)
     generatorVal = VVAD_LRS3(path=args.data_path, split="val", testing=args.testing, val_split=0.1, test_split=0.1)
@@ -124,7 +124,7 @@ if args.model == "VVAD_LRS3":
                   metrics=[tf.keras.metrics.BinaryAccuracy(threshold=0.5), 'TrueNegatives', 'TruePositives',
                            'FalseNegatives', 'FalsePositives'])
 elif args.model.startswith("CNN2Plus1D"):
-    if args.reduce_frames > 0:  # TODO ADD this tmp weights path
+    if args.reduced_frames > 0.0:  # TODO ADD this tmp weights path
         if args.reduced_frames_tmp_weights_path is None:
             if args.model == "CNN2Plus1DLight":
                 model = CNN2Plus1D_Light(weights="yes", seed=args.seed)
@@ -159,7 +159,7 @@ elif args.model.startswith("CNN2Plus1D"):
 
     loss = BinaryCrossentropy()
 
-    if args.reduce_frames > 0:  # Only used then reduce_frames is set
+    if args.reduced_frames > 0.0:  # Only used then reduced_frames is set
         lr = CosineDecay(initial_learning_rate=0.0001, decay_steps=n_batches_per_epoch * (args.epochs - args.warmup),
                          alpha=0.0)
     else:
@@ -197,7 +197,7 @@ callbacks_array.append(tf.keras.callbacks.TensorBoard(
     update_freq='epoch'
 ))
 
-if args.reduce_frames > 0:  # Only used then reduce_frames is set
+if args.reduced_frames > 0.0:  # Only used then reduced_frames is set
     callbacks_array.append(keras.callbacks.EarlyStopping(monitor='val_binary_accuracy', patience=5))
 else:
     callbacks_array.append(keras.callbacks.EarlyStopping(monitor='val_binary_accuracy', patience=15))
