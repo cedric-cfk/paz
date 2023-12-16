@@ -80,9 +80,9 @@ except FileExistsError:
 
 if args.reduced_frames > 0.0:
     generatorTrain = VVAD_LRS3(path=args.data_path, split="train", testing=args.testing, val_split=0.1, test_split=0.1,
-                               reduction_method=args.reduced_frames_type, reduction_length=args.reduced_frames)
+                               reduction_method=args.reduced_frames_type, reduced_length=args.reduced_frames)
     generatorVal = VVAD_LRS3(path=args.data_path, split="val", testing=args.testing, val_split=0.1, test_split=0.1,
-                             reduction_method=args.reduced_frames_type, reduction_length=args.reduced_frames)
+                             reduction_method=args.reduced_frames_type, reduced_length=args.reduced_frames)
 else:
     generatorTrain = VVAD_LRS3(path=args.data_path, split="train", testing=args.testing, val_split=0.1, test_split=0.1)
     generatorVal = VVAD_LRS3(path=args.data_path, split="val", testing=args.testing, val_split=0.1, test_split=0.1)
