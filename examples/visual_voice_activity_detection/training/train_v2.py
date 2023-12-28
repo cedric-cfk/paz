@@ -1,6 +1,7 @@
 import os
 import argparse
 import datetime
+import json
 import math
 import helper_functions
 from codecarbon import OfflineEmissionsTracker
@@ -77,6 +78,9 @@ try:
     os.mkdir(os.path.join(output_path, "checkpoints"))
 except FileExistsError:
     pass
+
+with open(output_path, 'w') as f:
+    json.dump(args.__dict__, f, indent=2)
 
 if args.reduced_frames > 0.0:
     generatorTrain = VVAD_LRS3(path=args.data_path, split="train", testing=args.testing, val_split=0.1, test_split=0.1,
