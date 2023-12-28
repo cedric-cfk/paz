@@ -1,9 +1,10 @@
 import argparse
 import os.path
+import json
 
 import CSVLogger
-from tensorflow.python.data import Dataset
 import tensorflow as tf
+from tensorflow.python.data import Dataset
 
 from paz.datasets import VVAD_LRS3
 from paz.models.classification import CNN2Plus1D, VVAD_LRS3_LSTM, MoViNet, CNN2Plus1D_Light, CNN2Plus1D_Layers, CNN2Plus1D_Filters
@@ -33,6 +34,15 @@ parser.add_argument('--testing', action='store_true', help='Use the test split i
 parser.add_argument('--use_multiprocessing', action='store_true', help='Use multiprocessing for data loading')
 parser.add_argument('--workers', type=int, default=5, help='Number of workers for data loading')
 parser.add_argument('--max_queue_size', type=int, default=15, help='Max queue size for data loading')
+parser.add_argument('-c', '--cache', type=bool, default=False, help='Cache dataset in memory or not')
+parser.add_argument('--reduced_frames', type=float, default=0.0,
+                    help='Amount of frames in fps to reduce the dataset video length to. 25 is the max fps. '
+                         + '0 means no reduction. (Only available for CNN2Plus1D models)')
+parser.add_argument('--reduced_frames_type', type=str, default='cut',
+                    help="Method used to reduce the dataset video length If 'cut' is selected, the video is cut to "
+                         + "reduced_frames. If 'reduce' is selected, reduced_frames many single frames of the video"
+                         + " are removed form the clip. (Only available for CNN2Plus1D models)",
+                    choices=['reduce', 'cut'])
 args = parser.parse_args()
 
 try:
@@ -40,23 +50,29 @@ try:
 except FileExistsError:
     pass
 
-length = 38
+with open('commandline_args.txt', 'w') as f:
+    json.dump(args.__dict__, f, indent=2)
 
 if args.testing:
     generatorVal = VVAD_LRS3(path=args.data_path, split="val", testing=args.testing, val_split=1.0, test_split=0.0,
-                             evaluating=True, reduction_method="cut", reduction_length=length)
+                             evaluating=True, reduction_method=args.reduced_frames_type,
+                             reduction_length=args.reduced_frames)
 else:
     generatorVal = VVAD_LRS3(path=args.data_path, split="val", testing=args.testing, val_split=0.1, test_split=0.1,
-                             evaluating=True, reduction_method="cut", reduction_length=length)
+                             evaluating=True, reduction_method=args.reduced_frames_type,
+                             reduction_length=args.reduced_frames)
 
-datasetVal = Dataset.from_generator(generatorVal, output_signature=(tf.TensorSpec(shape=(length, 96, 96, 3)), tf.TensorSpec(shape=(), dtype=tf.int8)))
+video_length = generatorVal.reduction_length
+
+datasetVal = Dataset.from_generator(generatorVal, output_signature=(tf.TensorSpec(shape=(video_length, 96, 96, 3)), tf.TensorSpec(shape=(), dtype=tf.int8)))
 
 # Add length of dataset. This needs to be manually set because we use from generator.
 datasetVal = datasetVal.apply(
     tf.data.experimental.assert_cardinality(len(generatorVal))
 )
 
-datasetVal = datasetVal.cache().prefetch(buffer_size=tf.data.AUTOTUNE)
+if args.cache:
+    datasetVal = datasetVal.cache().prefetch(buffer_size=tf.data.AUTOTUNE)
 
 datasetVal = datasetVal.padded_batch(1)  # args.batch_size
 
@@ -67,14 +83,14 @@ if args.weight_path is None:
     elif args.model == "CNN2Plus1D":
         model = CNN2Plus1D(weights="yes", input_shape=(38, 96, 96, 3))
     elif args.model == "CNN2Plus1DLight":
-        model = CNN2Plus1D_Light(weights="yes", input_shape=(length, 96, 96, 3))
+        model = CNN2Plus1D_Light(weights="yes", input_shape=(video_length, 96, 96, 3))
     elif args.model == "CNN2Plus1DLayers":
         model = CNN2Plus1D_Layers(weights="yes", input_shape=(38, 96, 96, 3))
     elif args.model == "CNN2Plus1DFilters":
-        model = CNN2Plus1D_Filters(weights="yes", input_shape=(38, 96, 96, 3))
+        model = CNN2Plus1D_Filters(weights="yes", input_shape=(video_length, 96, 96, 3))
     else:
         raise NotImplemented("Not implemented yet")
-else:  # TODO Finish weights for all other models
+else:
     if args.model == "VVAD_LRS3":
         model = VVAD_LRS3_LSTM(weights="yes", input_shape=(38, 96, 96, 3), tmp_weights_path=args.weight_path)
     elif args.model == "CNN2Plus1D":
@@ -84,7 +100,7 @@ else:  # TODO Finish weights for all other models
     elif args.model == "CNN2Plus1DLayers":
         model = CNN2Plus1D_Layers(weights="yes", input_shape=(38, 96, 96, 3), tmp_weights_path=args.weight_path)
     elif args.model == "CNN2Plus1DFilters":
-        model = CNN2Plus1D_Filters(weights="yes", input_shape=(38, 96, 96, 3), tmp_weights_path=args.weight_path)
+        model = CNN2Plus1D_Filters(weights="yes", input_shape=(video_length, 96, 96, 3), tmp_weights_path=args.weight_path)
     else:
         raise NotImplemented("Not implemented yet")
 
@@ -112,12 +128,14 @@ print("The needed FLOPs of the model is: {}".format(flops), flush=True)
 if not tf.config.list_physical_devices('GPU'):
     print("No GPU was detected. No GPU memory usage will be logged.")
 
-csv_logger = CSVLogger.CSVLoggerEval(args.output_path, args.model, data_generator=generatorVal, params=parameters, flops=flops)
+csv_logger = CSVLogger.CSVLoggerEval(args.output_path, args.model, data_generator=generatorVal, params=parameters,
+                                     flops=flops)
 
-model.predict(datasetVal,
-              max_queue_size=args.max_queue_size,
-              workers=args.workers,
-              use_multiprocessing=args.use_multiprocessing)
+if args.cache:
+    model.predict(datasetVal,
+                  max_queue_size=args.max_queue_size,
+                  workers=args.workers,
+                  use_multiprocessing=args.use_multiprocessing)
 
 model.predict(datasetVal,
               callbacks=[csv_logger],
