@@ -79,7 +79,7 @@ try:
 except FileExistsError:
     pass
 
-with open(output_path, 'w') as f:
+with open(os.path.join(output_path, 'commandline_args.txt'), 'w') as f:
     json.dump(args.__dict__, f, indent=2)
 
 if args.reduced_frames > 0.0:
