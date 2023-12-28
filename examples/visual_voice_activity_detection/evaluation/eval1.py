@@ -46,23 +46,23 @@ parser.add_argument('--reduced_frames_type', type=str, default='cut',
 args = parser.parse_args()
 
 try:
-    os.mkdir(os.path.join(os.path.join(args.output_path, args.model)))
+    os.mkdir(os.path.join(args.output_path, args.model))
 except FileExistsError:
     pass
 
-with open('commandline_args.txt', 'w') as f:
+with open(os.path.join(args.output_path, args.model, 'commandline_args.txt'), 'w') as f:
     json.dump(args.__dict__, f, indent=2)
 
 if args.testing:
     generatorVal = VVAD_LRS3(path=args.data_path, split="val", testing=args.testing, val_split=1.0, test_split=0.0,
                              evaluating=True, reduction_method=args.reduced_frames_type,
-                             reduction_length=args.reduced_frames)
+                             reduced_length=args.reduced_frames)
 else:
     generatorVal = VVAD_LRS3(path=args.data_path, split="val", testing=args.testing, val_split=0.1, test_split=0.1,
                              evaluating=True, reduction_method=args.reduced_frames_type,
-                             reduction_length=args.reduced_frames)
+                             reduced_length=args.reduced_frames)
 
-video_length = generatorVal.reduction_length
+video_length = generatorVal.reduced_length
 
 datasetVal = Dataset.from_generator(generatorVal, output_signature=(tf.TensorSpec(shape=(video_length, 96, 96, 3)), tf.TensorSpec(shape=(), dtype=tf.int8)))
 
