@@ -35,7 +35,7 @@ parser.add_argument('--use_multiprocessing', action='store_true', help='Use mult
 parser.add_argument('--workers', type=int, default=5, help='Number of workers for data loading')
 parser.add_argument('--max_queue_size', type=int, default=15, help='Max queue size for data loading')
 parser.add_argument('-c', '--cache', type=bool, default=False, help='Cache dataset in memory or not')
-parser.add_argument('--reduced_frames', type=float, default=0.0,
+parser.add_argument('--reduced_frames', type=float, default=None,
                     help='Amount of frames in fps to reduce the dataset video length to. 25 is the max fps. '
                          + '0 means no reduction. (Only available for CNN2Plus1D models)')
 parser.add_argument('--reduced_frames_type', type=str, default='cut',
@@ -81,6 +81,10 @@ if args.weight_path is None:
     if args.model == "VVAD_LRS3":
         model = VVAD_LRS3_LSTM(weights="yes", input_shape=(38, 96, 96, 3))
     elif args.model == "CNN2Plus1D":
+        print("Special Loading of the model.")
+        # model = tf.keras.models.load_model('/media/cedric/SpeedData/Uni_Seafile/Master_Thesis/paz/examples/visual_voice_activity_detection/training/cnn2plus1d_filters.h5')
+        # model = tf.saved_model.load('../training/cnn2plus1d.keras')
+        # model.summary()
         model = CNN2Plus1D(weights="yes", input_shape=(38, 96, 96, 3))
     elif args.model == "CNN2Plus1DLight":
         model = CNN2Plus1D_Light(weights="yes", input_shape=(video_length, 96, 96, 3))
