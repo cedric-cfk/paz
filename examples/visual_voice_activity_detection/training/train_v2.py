@@ -91,10 +91,12 @@ else:
     generatorTrain = VVAD_LRS3(path=args.data_path, split="train", testing=args.testing, val_split=0.1, test_split=0.1)
     generatorVal = VVAD_LRS3(path=args.data_path, split="val", testing=args.testing, val_split=0.1, test_split=0.1)
 
+video_length = generatorVal.reduced_length
+
 datasetTrain = Dataset.from_generator(generatorTrain, output_signature=(
-    tf.TensorSpec(shape=(38, 96, 96, 3)), tf.TensorSpec(shape=(), dtype=tf.int8)))
+    tf.TensorSpec(shape=(video_length, 96, 96, 3)), tf.TensorSpec(shape=(), dtype=tf.int8)))
 datasetVal = Dataset.from_generator(generatorVal, output_signature=(
-    tf.TensorSpec(shape=(38, 96, 96, 3)), tf.TensorSpec(shape=(), dtype=tf.int8)))
+    tf.TensorSpec(shape=(video_length, 96, 96, 3)), tf.TensorSpec(shape=(), dtype=tf.int8)))
 
 # Add length of dataset. This needs to be manually set because we use from generator.
 datasetTrain = datasetTrain.apply(
@@ -131,25 +133,26 @@ elif args.model.startswith("CNN2Plus1D"):
     if args.reduced_frames > 0.0:  # TODO ADD this tmp weights path
         if args.reduced_frames_tmp_weights_path is None:
             if args.model == "CNN2Plus1DLight":
-                model = CNN2Plus1D_Light(weights="yes", seed=args.seed)
+                model = CNN2Plus1D_Light(weights="yes", input_shape=(video_length, 96, 96, 3), seed=args.seed)
             elif args.model == "CNN2Plus1DFilters":
-                model = CNN2Plus1D_Filters(weights="yes", seed=args.seed)
+                model = CNN2Plus1D_Filters(weights="yes", input_shape=(video_length, 96, 96, 3), seed=args.seed)
             elif args.model == "CNN2Plus1DLayers":
-                model = CNN2Plus1D_Layers(weights="yes", seed=args.seed)
+                model = CNN2Plus1D_Layers(weights="yes", input_shape=(video_length, 96, 96, 3), seed=args.seed)
             else:
-                model = CNN2Plus1D(weights="yes", seed=args.seed)
+                model = CNN2Plus1D(weights="yes", input_shape=(video_length, 96, 96, 3), seed=args.seed)
         else:
             if args.model == "CNN2Plus1DLight":
-                model = CNN2Plus1D_Light(weights="yes", seed=args.seed,
+                model = CNN2Plus1D_Light(weights="yes", input_shape=(video_length, 96, 96, 3), seed=args.seed,
                                          tmp_weights_path=args.reduced_frames_tmp_weights_path)
             elif args.model == "CNN2Plus1DFilters":
-                model = CNN2Plus1D_Filters(weights="yes", seed=args.seed,
+                model = CNN2Plus1D_Filters(weights="yes", input_shape=(video_length, 96, 96, 3), seed=args.seed,
                                            tmp_weights_path=args.reduced_frames_tmp_weights_path)
             elif args.model == "CNN2Plus1DLayers":
-                model = CNN2Plus1D_Layers(weights="yes", seed=args.seed,
+                model = CNN2Plus1D_Layers(weights="yes", input_shape=(video_length, 96, 96, 3), seed=args.seed,
                                           tmp_weights_path=args.reduced_frames_tmp_weights_path)
             else:
-                model = CNN2Plus1D(weights="yes", seed=args.seed, tmp_weights_path=args.reduced_frames_tmp_weights_path)
+                model = CNN2Plus1D(weights="yes", input_shape=(video_length, 96, 96, 3), seed=args.seed,
+                                   tmp_weights_path=args.reduced_frames_tmp_weights_path)
 
     else:
         if args.model == "CNN2Plus1DLight":
