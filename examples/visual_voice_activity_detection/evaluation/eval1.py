@@ -79,30 +79,30 @@ datasetVal = datasetVal.padded_batch(1)  # args.batch_size
 model = None
 if args.weight_path is None:
     if args.model == "VVAD_LRS3":
-        model = VVAD_LRS3_LSTM(weights="yes", input_shape=(38, 96, 96, 3))
+        model = VVAD_LRS3_LSTM(weights="yes", input_shape=(video_length, 96, 96, 3))
     elif args.model == "CNN2Plus1D":
         print("Special Loading of the model.")
         # model = tf.keras.models.load_model('/media/cedric/SpeedData/Uni_Seafile/Master_Thesis/paz/examples/visual_voice_activity_detection/training/cnn2plus1d_filters.h5')
         # model = tf.saved_model.load('../training/cnn2plus1d.keras')
         # model.summary()
-        model = CNN2Plus1D(weights="yes", input_shape=(38, 96, 96, 3))
+        model = CNN2Plus1D(weights="yes", input_shape=(video_length, 96, 96, 3))
     elif args.model == "CNN2Plus1DLight":
         model = CNN2Plus1D_Light(weights="yes", input_shape=(video_length, 96, 96, 3))
     elif args.model == "CNN2Plus1DLayers":
-        model = CNN2Plus1D_Layers(weights="yes", input_shape=(38, 96, 96, 3))
+        model = CNN2Plus1D_Layers(weights="yes", input_shape=(video_length, 96, 96, 3))
     elif args.model == "CNN2Plus1DFilters":
         model = CNN2Plus1D_Filters(weights="yes", input_shape=(video_length, 96, 96, 3))
     else:
         raise NotImplemented("Not implemented yet")
 else:
     if args.model == "VVAD_LRS3":
-        model = VVAD_LRS3_LSTM(weights="yes", input_shape=(38, 96, 96, 3), tmp_weights_path=args.weight_path)
+        model = VVAD_LRS3_LSTM(weights="yes", input_shape=(video_length, 96, 96, 3), tmp_weights_path=args.weight_path)
     elif args.model == "CNN2Plus1D":
-        model = CNN2Plus1D(weights="yes", input_shape=(38, 96, 96, 3), tmp_weights_path=args.weight_path)
+        model = CNN2Plus1D(weights="yes", input_shape=(video_length, 96, 96, 3), tmp_weights_path=args.weight_path)
     elif args.model == "CNN2Plus1DLight":
-        model = CNN2Plus1D_Light(weights="yes", input_shape=(38, 96, 96, 3), tmp_weights_path=args.weight_path)
+        model = CNN2Plus1D_Light(weights="yes", input_shape=(video_length, 96, 96, 3), tmp_weights_path=args.weight_path)
     elif args.model == "CNN2Plus1DLayers":
-        model = CNN2Plus1D_Layers(weights="yes", input_shape=(38, 96, 96, 3), tmp_weights_path=args.weight_path)
+        model = CNN2Plus1D_Layers(weights="yes", input_shape=(video_length, 96, 96, 3), tmp_weights_path=args.weight_path)
     elif args.model == "CNN2Plus1DFilters":
         model = CNN2Plus1D_Filters(weights="yes", input_shape=(video_length, 96, 96, 3), tmp_weights_path=args.weight_path)
     else:
