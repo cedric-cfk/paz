@@ -15,7 +15,7 @@ from keras.losses import BinaryCrossentropy
 from keras.optimizers import AdamW, SGD  # TODO test a new docker with tensorflow 2.14
 from keras.optimizers.schedules import CosineDecay
 
-from paz.datasets import VVAD_LRS3
+from paz.datasets import VvadLrs3Dataset
 from paz.models.classification import CNN2Plus1D, VVAD_LRS3_LSTM, MoViNet
 
 parser = argparse.ArgumentParser(description='Paz VVAD Training')
@@ -83,13 +83,13 @@ with open(os.path.join(output_path, 'commandline_args.txt'), 'w') as f:
     json.dump(args.__dict__, f, indent=2)
 
 if args.reduced_frames > 0.0:
-    generatorTrain = VVAD_LRS3(path=args.data_path, split="train", testing=args.testing, val_split=0.1, test_split=0.1,
+    generatorTrain = VvadLrs3Dataset(path=args.data_path, split="train", testing=args.testing, val_split=0.1, test_split=0.1,
                                reduction_method=args.reduced_frames_type, reduced_length=args.reduced_frames)
-    generatorVal = VVAD_LRS3(path=args.data_path, split="val", testing=args.testing, val_split=0.1, test_split=0.1,
+    generatorVal = VvadLrs3Dataset(path=args.data_path, split="val", testing=args.testing, val_split=0.1, test_split=0.1,
                              reduction_method=args.reduced_frames_type, reduced_length=args.reduced_frames)
 else:
-    generatorTrain = VVAD_LRS3(path=args.data_path, split="train", testing=args.testing, val_split=0.1, test_split=0.1)
-    generatorVal = VVAD_LRS3(path=args.data_path, split="val", testing=args.testing, val_split=0.1, test_split=0.1)
+    generatorTrain = VvadLrs3Dataset(path=args.data_path, split="train", testing=args.testing, val_split=0.1, test_split=0.1)
+    generatorVal = VvadLrs3Dataset(path=args.data_path, split="val", testing=args.testing, val_split=0.1, test_split=0.1)
 
 video_length = generatorVal.reduced_length
 
