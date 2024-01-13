@@ -6,7 +6,7 @@ import CSVLogger
 import tensorflow as tf
 from tensorflow.python.data import Dataset
 
-from paz.datasets import VVAD_LRS3
+from paz.datasets import VvadLrs3Dataset
 from paz.models.classification import CNN2Plus1D, VVAD_LRS3_LSTM, MoViNet, CNN2Plus1D_Light, CNN2Plus1D_Layers, CNN2Plus1D_Filters
 
 keras = tf.keras
@@ -54,17 +54,18 @@ with open(os.path.join(args.output_path, args.model, 'commandline_args.txt'), 'w
     json.dump(args.__dict__, f, indent=2)
 
 if args.testing:
-    generatorVal = VVAD_LRS3(path=args.data_path, split="val", testing=args.testing, val_split=1.0, test_split=0.0,
-                             evaluating=True, reduction_method=args.reduced_frames_type,
+    generatorVal = VvadLrs3Dataset(path=args.data_path, split="validation", testing=args.testing, validation_split=1.0,
+                             test_split=0.0, evaluating=True, reduction_method=args.reduced_frames_type,
                              reduced_length=args.reduced_frames)
 else:
-    generatorVal = VVAD_LRS3(path=args.data_path, split="val", testing=args.testing, val_split=0.1, test_split=0.1,
-                             evaluating=True, reduction_method=args.reduced_frames_type,
+    generatorVal = VvadLrs3Dataset(path=args.data_path, split="validation", testing=args.testing, validation_split=0.1,
+                             test_split=0.1, evaluating=True, reduction_method=args.reduced_frames_type,
                              reduced_length=args.reduced_frames)
 
 video_length = generatorVal.reduced_length
 
-datasetVal = Dataset.from_generator(generatorVal, output_signature=(tf.TensorSpec(shape=(video_length, 96, 96, 3)), tf.TensorSpec(shape=(), dtype=tf.int8)))
+datasetVal = Dataset.from_generator(generatorVal, output_signature=(tf.TensorSpec(shape=(video_length, 96, 96, 3)),
+                                                                    tf.TensorSpec(shape=(), dtype=tf.int8)))
 
 # Add length of dataset. This needs to be manually set because we use from generator.
 datasetVal = datasetVal.apply(
