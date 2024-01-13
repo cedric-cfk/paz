@@ -55,7 +55,7 @@ parser.add_argument('--reduced_frames_type', type=str, default='cut',
 parser.add_argument('--reduced_frames_tmp_weights_path', type=str, default=None,
                     help="Path to the tmp weights file used for the reduced_frames model. "
                          + "Only used when reduced_frames is set. (Only available for CNN2Plus1D models)")
-parser.add_argument('-c', '--cache', type=bool, default=False, help='Cache dataset in memory or not')
+parser.add_argument('-c', '--cache', action='store_true', help='Cache dataset in memory or not')
 
 args = parser.parse_args()
 
