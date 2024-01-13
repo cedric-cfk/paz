@@ -86,11 +86,11 @@ with open(os.path.join(output_path, 'commandline_args.txt'), 'w') as f:
 if args.reduced_frames > 0.0:
     generatorTrain = VvadLrs3Dataset(path=args.data_path, split="train", testing=args.testing, val_split=0.1, test_split=0.1,
                                reduction_method=args.reduced_frames_type, reduced_length=args.reduced_frames)
-    generatorVal = VvadLrs3Dataset(path=args.data_path, split="val", testing=args.testing, val_split=0.1, test_split=0.1,
+    generatorVal = VvadLrs3Dataset(path=args.data_path, split="validation", testing=args.testing, val_split=0.1, test_split=0.1,
                              reduction_method=args.reduced_frames_type, reduced_length=args.reduced_frames)
 else:
     generatorTrain = VvadLrs3Dataset(path=args.data_path, split="train", testing=args.testing, val_split=0.1, test_split=0.1)
-    generatorVal = VvadLrs3Dataset(path=args.data_path, split="val", testing=args.testing, val_split=0.1, test_split=0.1)
+    generatorVal = VvadLrs3Dataset(path=args.data_path, split="validation", testing=args.testing, val_split=0.1, test_split=0.1)
 
 video_length = generatorVal.reduced_length
 
