@@ -32,7 +32,7 @@ parser.add_argument('-o', '--output_path', type=str,
                     help='Path to directory for saving outputs.')
 parser.add_argument('--split', type=str, default='testing',
                     help="Choose the dataset split that should be used for the evaluation",
-                    choices=['validation', 'testing'])
+                    choices=['validation', 'test'])
 parser.add_argument('--testing', action='store_true', help='Use the test split instead of the validation split')
 parser.add_argument('--use_multiprocessing', action='store_true', help='Use multiprocessing for data loading')
 parser.add_argument('--workers', type=int, default=5, help='Number of workers for data loading')
