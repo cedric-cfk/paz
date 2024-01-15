@@ -37,7 +37,7 @@ parser.add_argument('--testing', action='store_true', help='Use the test split i
 parser.add_argument('--use_multiprocessing', action='store_true', help='Use multiprocessing for data loading')
 parser.add_argument('--workers', type=int, default=5, help='Number of workers for data loading')
 parser.add_argument('--max_queue_size', type=int, default=15, help='Max queue size for data loading')
-parser.add_argument('-c', '--cache', type=bool, default=False, help='Cache dataset in memory or not')
+parser.add_argument('-c', '--cache', action='store_true', help='Cache dataset in memory or not')
 parser.add_argument('--reduced_frames', type=float, default=None,
                     help='Amount of frames in fps to reduce the dataset video length to. 25 is the max fps. '
                          + '0 means no reduction. (Only available for CNN2Plus1D models)')
