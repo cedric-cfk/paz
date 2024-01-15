@@ -30,6 +30,9 @@ parser.add_argument('-b', '--batch_size', type=int,
 parser.add_argument('-o', '--output_path', type=str,
                     default="./output/",
                     help='Path to directory for saving outputs.')
+parser.add_argument('--split', type=str, default='testing',
+                    help="Choose the dataset split that should be used for the evaluation",
+                    choices=['validation', 'testing'])
 parser.add_argument('--testing', action='store_true', help='Use the test split instead of the validation split')
 parser.add_argument('--use_multiprocessing', action='store_true', help='Use multiprocessing for data loading')
 parser.add_argument('--workers', type=int, default=5, help='Number of workers for data loading')
@@ -58,7 +61,7 @@ if args.testing:
                              test_split=0.0, evaluating=True, reduction_method=args.reduced_frames_type,
                              reduced_length=args.reduced_frames)
 else:
-    generatorVal = VvadLrs3Dataset(path=args.data_path, split="validation", testing=args.testing, validation_split=0.1,
+    generatorVal = VvadLrs3Dataset(path=args.data_path, split=args.split, testing=args.testing, validation_split=0.1,
                              test_split=0.1, evaluating=True, reduction_method=args.reduced_frames_type,
                              reduced_length=args.reduced_frames)
 
