@@ -24,7 +24,7 @@ class Plotter:
         print("Loading eval data...")
 
         if os.path.exists(eval_path):
-            self.model_paths = list(set(glob(eval_path + "/*/")) - set(glob(eval_path + "/plots/")) - set(glob(eval_path + "/test/")) - set(glob(eval_path + "/test_dataset/")))
+            self.model_paths = list(set(glob(eval_path + "/*/")) - set(glob(eval_path + "/plots/")) - set(glob(eval_path + "/test/")) - set(glob(eval_path + "/test_dataset/")) - set(glob(eval_path + "/test_reduce/")))
             self.model_names = [os.path.basename(os.path.dirname(path)) for path in self.model_paths]
 
             self.output_path = os.path.join(eval_path, "plots")
