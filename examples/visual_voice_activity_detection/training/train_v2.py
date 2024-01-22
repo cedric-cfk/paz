@@ -209,7 +209,7 @@ callbacks_array.append(tf.keras.callbacks.TensorBoard(
 if args.reduced_frames > 0.0:  # Only used then reduced_frames is set
     callbacks_array.append(keras.callbacks.EarlyStopping(monitor='val_binary_accuracy', patience=5))
 else:
-    callbacks_array.append(keras.callbacks.EarlyStopping(monitor='val_binary_accuracy', patience=15))
+    callbacks_array.append(keras.callbacks.EarlyStopping(monitor='val_binary_accuracy', patience=30))
 
 callbacks_array.append(helper_functions.CSVLogger(filename=os.path.join(output_path, 'outputs_csv.log')))
 
