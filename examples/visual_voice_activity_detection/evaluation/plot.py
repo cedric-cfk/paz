@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import matplotlib
 import numpy as np
 import pandas as pd
-from paz.models.classification.cnn2Plus1 import CNN2Plus1D, CNN2Plus1D_Filters, CNN2Plus1D_Layers, CNN2Plus1D_Light, CNN2Plus1D_18
+from paz.models.classification.cnn2Plus1 import CNN2Plus1D
 
 matplotlib.use("pgf")
 matplotlib.rcParams.update({
@@ -41,7 +41,7 @@ class Plotter:
         self.model_name_dict = {'VVAD_LRS3': 'Base', 'CNN2Plus1D': 'R(2+1)D', 'CNN2Plus1DFilters': 'R(2+1)D Filters', 'CNN2Plus1DLayers': 'R(2+1)D Layers', 'CNN2Plus1DLight': 'R(2+1)D Light', 'CNN2Plus1D18': 'R(2+1)D-18'}
 
         # NOTE: weight number is not equal to the index in the csv files. Weight number is index + 1
-        self.model_weights = {'VVAD_LRS3': 57, 'CNN2Plus1D': 30, 'CNN2Plus1DFilters': 23, 'CNN2Plus1DLayers': 17, 'CNN2Plus1DLight': 55}
+        self.model_weights = {'VVAD_LRS3': 24, 'CNN2Plus1D': 22, 'CNN2Plus1DFilters': 21, 'CNN2Plus1DLayers': 17, 'CNN2Plus1DLight': 35}
 
     def performance_per_models(self, model_name, metric):
         if model_name == "all":
@@ -118,7 +118,7 @@ class Plotter:
             if model_name == "VVAD_LRS3":
                 arr_height = 0.95
 
-        text = "Best " + label_name + "\n x={:.0f}, y={:.3f}".format(x_extreme, y_extreme)
+        text = "Best " + self.model_name_dict[label_name] + "\n x={:.0f}, y={:.3f}".format(x_extreme, y_extreme)
         if not ax:
             ax = plt.gca()
         bbox_props = dict(boxstyle="square,pad=0.3", fc="w", ec="k", lw=0.72)
@@ -482,7 +482,7 @@ class Plotter:
             eval_column_header = "parameters"
             y_lim = (0, 20000000)
             x = [self.model_name_dict["CNN2Plus1D18"], self.model_name_dict["CNN2Plus1DFilters"], self.model_name_dict["CNN2Plus1DLayers"], self.model_name_dict["CNN2Plus1D"], self.model_name_dict["CNN2Plus1DLight"]]
-            y = [int(CNN2Plus1D_18(input_shape=(38, 96, 96, 3)).count_params()), int(CNN2Plus1D_Filters(input_shape=(38, 96, 96, 3)).count_params()), int(CNN2Plus1D_Layers(input_shape=(38, 96, 96, 3)).count_params()), int(CNN2Plus1D(input_shape=(38, 96, 96, 3)).count_params()), int(CNN2Plus1D_Light(input_shape=(38, 96, 96, 3)).count_params())]
+            y = [int(CNN2Plus1D(architecture="CNN2Plus1D_18",input_shape=(38, 96, 96, 3)).count_params()), int(CNN2Plus1D(architecture="CNN2Plus1D_Filters", input_shape=(38, 96, 96, 3)).count_params()), int(CNN2Plus1D(architecture="CNN2Plus1D_Layers", input_shape=(38, 96, 96, 3)).count_params()), int(CNN2Plus1D(architecture="CNN2Plus1D", input_shape=(38, 96, 96, 3)).count_params()), int(CNN2Plus1D(architecture="CNN2Plus1D",input_shape=(38, 96, 96, 3)).count_params())]
         else:
             return
 
