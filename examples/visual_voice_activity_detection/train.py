@@ -13,7 +13,7 @@ from tensorflow.keras.optimizers.schedules import CosineDecay
 from paz.models.classification import CNN2Plus1D, VVAD_LRS3_LSTM
 
 import helper_functions
-from paz.examples.visual_voice_activity_detection import VvadLrs3Dataset
+from .vvad_lrs3_dataset import VvadLrs3Dataset
 
 parser = argparse.ArgumentParser(description='Paz VVAD Training')
 parser.add_argument('-p', '--data_path', type=str,
