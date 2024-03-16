@@ -81,7 +81,7 @@ datasetVal = datasetVal.padded_batch(1)  # args.batch_size
 model = None
 if args.model == "VVAD_LRS3":
     model = VVAD_LRS3_LSTM(weights="VVAD_LRS3", input_shape=(video_length, 96, 96, 3))
-elif args.model == "CNN2Plus1D":
+elif args.model.startswith("CNN2Plus1D"):
     model = CNN2Plus1D(weights="VVAD_LRS3", architecture=args.model, input_shape=(video_length, 96, 96, 3),
                        tmp_weight_path=args.tmp_weights_path)
 else:
