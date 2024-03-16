@@ -3,13 +3,11 @@ import argparse
 import datetime
 import json
 from codecarbon import OfflineEmissionsTracker
-from tensorflow.python.data import Dataset
 import tensorflow as tf
-
-keras = tf.keras
-from keras.losses import BinaryCrossentropy
-from keras.optimizers import AdamW, SGD
-from keras.optimizers.schedules import CosineDecay
+from tf.python.data import Dataset
+from tf.keras.losses import BinaryCrossentropy
+from tf.keras.optimizers import AdamW, SGD
+from tf.keras.optimizers.schedules import CosineDecay
 
 from paz.models.classification import CNN2Plus1D, VVAD_LRS3_LSTM
 
@@ -164,9 +162,9 @@ callbacks_array.append(tf.keras.callbacks.TensorBoard(
 ))
 
 if args.reduced_frames > 0.0:  # Only used then reduced_frames is set
-    callbacks_array.append(keras.callbacks.EarlyStopping(monitor='val_binary_accuracy', patience=5))
+    callbacks_array.append(tf.keras.callbacks.EarlyStopping(monitor='val_binary_accuracy', patience=5))
 else:
-    callbacks_array.append(keras.callbacks.EarlyStopping(monitor='val_binary_accuracy', patience=30))
+    callbacks_array.append(tf.keras.callbacks.EarlyStopping(monitor='val_binary_accuracy', patience=30))
 
 callbacks_array.append(helper_functions.CSVLogger(filename=os.path.join(output_path, 'outputs_csv.log')))
 
