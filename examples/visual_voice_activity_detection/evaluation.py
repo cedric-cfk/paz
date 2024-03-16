@@ -8,7 +8,7 @@ from tensorflow.python.data import Dataset
 
 from paz.models.classification import CNN2Plus1D, VVAD_LRS3_LSTM
 
-from ..vvad_lrs3_dataset import VvadLrs3Dataset
+from paz.examples.visual_voice_activity_detection.vvad_lrs3_dataset import VvadLrs3Dataset
 
 
 parser = argparse.ArgumentParser(description='Paz VVAD Training')

@@ -20,7 +20,7 @@ matplotlib.rcParams.update({
 class Plotter:
     def __init__(self):
         # eval_path = "/media/cedric/SpeedData/Uni_Seafile/Master_Thesis/CLUSTER_OUTPUTS/Evaluation/eval"
-        eval_path = "/media/cedric/SpeedData/Uni_Seafile/Master_Thesis/paz/examples/visual_voice_activity_detection/evaluation/output"
+        eval_path = "/paz/examples/visual_voice_activity_detection/evaluation/output"
 
         print("Loading eval data...")
 
@@ -192,8 +192,10 @@ class Plotter:
         list1 = []
         list2 = []
         for i in range(len(self.model_paths)):
-            list1.append(float(metrics_functions.get_data_column(self.model_paths[i] + "training_train.log", train_column_header)[self.model_weights[self.model_names[i]]-1]))
-            list2.append(float(metrics_functions.get_data_column(self.model_paths[i] + "training_epoch.log", eval_column_header)[0]))
+            list1.append(float(
+                metrics_functions.get_data_column(self.model_paths[i] + "training_train.log", train_column_header)[self.model_weights[self.model_names[i]] - 1]))
+            list2.append(float(
+                metrics_functions.get_data_column(self.model_paths[i] + "training_epoch.log", eval_column_header)[0]))
 
         print("list1:  ", list1)
         print("list2: ", list2)
