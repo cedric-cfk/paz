@@ -4,10 +4,11 @@ import datetime
 import json
 from codecarbon import OfflineEmissionsTracker
 import tensorflow as tf
-from tf.python.data import Dataset
-from tf.keras.losses import BinaryCrossentropy
-from tf.keras.optimizers import AdamW, SGD
-from tf.keras.optimizers.schedules import CosineDecay
+
+from tensorflow.python.data import Dataset
+from tensorflow.keras.losses import BinaryCrossentropy
+from tensorflow.keras.optimizers import AdamW, SGD
+from tensorflow.keras.optimizers.schedules import CosineDecay
 
 from paz.models.classification import CNN2Plus1D, VVAD_LRS3_LSTM
 

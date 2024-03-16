@@ -4,7 +4,7 @@ import json
 
 import CSVLogger
 import tensorflow as tf
-from tf.python.data import Dataset
+from tensorflow.python.data import Dataset
 
 from paz.models.classification import CNN2Plus1D, VVAD_LRS3_LSTM
 
