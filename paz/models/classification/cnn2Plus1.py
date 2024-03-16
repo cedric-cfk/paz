@@ -286,7 +286,7 @@ def original_18(input_layer, height, width):
 
 
 def CNN2Plus1D(weights=None, input_shape=(38, 96, 96, 3), seed=305865,
-               architecture: Architecture_Options = 'CNN2Plus1D'):
+               architecture: Architecture_Options = 'CNN2Plus1D', tmp_weight_path=None):
     """Binary Classification for videos with 2+1D CNNs.
     # Arguments
         weights: ``None`` or string with pre-trained dataset. Valid datasets
@@ -347,8 +347,10 @@ def CNN2Plus1D(weights=None, input_shape=(38, 96, 96, 3), seed=305865,
     model = Model(inputs=image, outputs=x, name=architecture)
 
     if weights == 'VVAD_LRS3':
-        if architecture == 'CNN2Plus1D_18':
-            raise ValueError(f"'{architecture}' is not available with weights.")
-        model.load_weights(weights_path)
-
+        if not tmp_weight_path:
+            if architecture == 'CNN2Plus1D_18':
+                raise ValueError(f"'{architecture}' is not available with weights.")
+            model.load_weights(weights_path)
+        else:
+            model.load_weights(tmp_weight_path)
     return model

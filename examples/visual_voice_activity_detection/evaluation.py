@@ -41,6 +41,9 @@ parser.add_argument('--reduced_frames_type', type=str, default='cut',
                          + "reduced_frames. If 'reduce' is selected, reduced_frames many single frames of the video"
                          + " are removed form the clip. (Only available for CNN2Plus1D models)",
                     choices=['reduce', 'cut'])
+parser.add_argument('--tmp_weights_path', type=str, default=None,
+                    help="Path to the tmp weights file used for the reduced_frames model. "
+                         + "Only used when reduced_frames is set. (Only available for CNN2Plus1D models)")
 args = parser.parse_args()
 
 try:
@@ -79,7 +82,8 @@ model = None
 if args.model == "VVAD_LRS3":
     model = VVAD_LRS3_LSTM(weights="VVAD_LRS3", input_shape=(video_length, 96, 96, 3))
 elif args.model == "CNN2Plus1D":
-    model = CNN2Plus1D(weights="VVAD_LRS3", architecture=args.model, input_shape=(video_length, 96, 96, 3))
+    model = CNN2Plus1D(weights="VVAD_LRS3", architecture=args.model, input_shape=(video_length, 96, 96, 3),
+                       tmp_weight_path=args.tmp_weights_path)
 else:
     raise NotImplemented("Not implemented yet")
 
