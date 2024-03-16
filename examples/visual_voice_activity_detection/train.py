@@ -126,7 +126,7 @@ if args.model == "VVAD_LRS3":
                            'FalseNegatives', 'FalsePositives'])
 elif args.model.startswith("CNN2Plus1D"):
     if args.reduced_frames > 0.0:
-        model = CNN2Plus1D(weights="VVAD_LRS3", architecture=args.model, seed=args.seed)
+        model = CNN2Plus1D(weights="VVAD_LRS3", architecture=args.model, input_shape=(video_length, 96, 96, 3), seed=args.seed)
     else:
         model = CNN2Plus1D(architecture=args.model, seed=args.seed)
 
