@@ -13,14 +13,16 @@ def print_samples(data, shape, label, output_path):
     fig = plt.figure()
     borderSize = int(shape[1] / 8)
     value = [0, 255, 0] if label else [255, 0, 0]
-    images = [
-        [plt.imshow(cv2.copyMakeBorder(cv2.cvtColor(features, cv2.COLOR_BGR2RGB), top=borderSize, bottom=borderSize,
-                                       left=borderSize, right=borderSize, borderType=cv2.BORDER_CONSTANT, value=value),
-                    animated=True)] for features in data]
+    # images = [
+    #     [plt.imshow(cv2.copyMakeBorder(cv2.cvtColor(features, cv2.COLOR_BGR2RGB), top=borderSize, bottom=borderSize,
+    #                                    left=borderSize, right=borderSize, borderType=cv2.BORDER_CONSTANT, value=value),
+    #                 animated=True)] for features in data]
+
+    images = [[plt.imshow(cv2.cvtColor(features, cv2.COLOR_BGR2RGB), animated=True)] for features in data]
 
     ani = animation.ArtistAnimation(fig, images, interval=(1 / fps) * 1000, blit=True,
                                         repeat_delay=1000)
-    ani.save(output_path, writer='imagemagick')
+    ani.save(str(str(output_path) + "_" + str(label) + ".gif"), writer='imagemagick')
     plt.close(fig)
 
 
@@ -51,12 +53,17 @@ def save_failures(log_filepath, dataset_path):
         os.mkdir(output_dir)
     except FileExistsError:
         pass
+
     # TODO add score display in frame
     # TODO batch number in filename
     for i in wrongs:
-        print_samples(x_train[i],(38,96, 96, 3), bool(y_true[i]), os.path.join(output_dir, "id" + str(i) + ".gif"))
+        print_samples(x_train[i],(38,96, 96, 3), bool(y_true[i]), os.path.join(output_dir, "id_" + str(i)))
 
-save_failures("/home/cedric/Seafile/Uni_Seafile/Master_Thesis/CLUSTER_OUTPUTS/Evaluation/eval/CNN2Plus1D/training_batch.log",
-              "/home/cedric/.keras/paz/datasets/vvadlrs3_faceImages_small.h5")
+# save_failures("/media/cedric/SpeedData/Uni_Seafile/Master_Thesis/CLUSTER_OUTPUTS/Evaluation/test_data/cpu16/only_normal/CNN2Plus1DFilters/training_batch.log",
+              # "/home/cedric/.keras/paz/datasets/vvadlrs3_faceImages_small.h5")
+save_failures("/media/cedric/SpeedData/Uni_Seafile/Master_Thesis/CLUSTER_OUTPUTS/Evaluation/test_data/cpu16/only_normal/CNN2Plus1DFilters/training_batch.log",
+              "/media/cedric/SpeedData/Datasets/VVAD/vvadlrs3_faceImages_small.h5")
+
+
 # small: /home/cedric/Seafile/Uni_Seafile/Master_Thesis/paz/examples/visual_voice_activity_detection/evaluation/training.log
 # big: /home/cedric/Seafile/Uni_Seafile/Master_Thesis/CLUSTER_OUTPUTS/Evaluation/eval/CNN2Plus1D/training_batch.log
